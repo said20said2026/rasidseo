@@ -2185,7 +2185,7 @@ export default function App() {
                   <span>{t('nav.schedule_audit', 'جدولة فحص دوري')}</span>
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 </button>
-                <a href="#results-section" className="hover:text-white transition-colors">
+                <a href="/#results-section" className="hover:text-white transition-colors">
                   {t('nav.audit_report', 'تقرير الفحص')}
                 </a>
                 <button
@@ -2202,14 +2202,17 @@ export default function App() {
                   <Wrench className="w-3.5 h-3.5 text-amber-400" />
                   <span>{t('nav.fix_guide', 'دليل إصلاح الأخطاء')}</span>
                 </button>
-                <a href="#tools-section" className="hover:text-white transition-colors">
+                <a href="/#tools-section" className="hover:text-white transition-colors">
                   {t('nav.code_generator', 'مولد الأكواد')}
                 </a>
-                <a href="#guide-section" className="hover:text-white transition-colors">
+                <a href="/#guide-section" className="hover:text-white transition-colors">
                   {t('nav.seo_guide', 'دليل السيو')}
                 </a>
-                <a href="#faq-section" className="hover:text-white transition-colors">
+                <a href="/#faq-section" className="hover:text-white transition-colors">
                   {t('nav.faq', 'الأسئلة الشائعة')}
+                </a>
+                <a href="/sitemap.xml" className="hover:text-white transition-colors">
+                  Sitemap
                 </a>
               </div>
 

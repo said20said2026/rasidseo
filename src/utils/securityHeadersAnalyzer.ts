@@ -40,9 +40,10 @@ export function analyzeSecurityHeaders(
     }
   }
 
-  const hasUnsafeInline = cspHeader.includes("'unsafe-inline'");
-  const hasUnsafeEval = cspHeader.includes("'unsafe-eval'");
-  const hasWildcard = cspHeader.split(/\s+/).some(p => p === '*' || p === 'https:*');
+  const scriptSrcDirectives = cspDirectivesMap['script-src'] || cspDirectivesMap['default-src'] || [];
+  const hasUnsafeInline = scriptSrcDirectives.includes("'unsafe-inline'");
+  const hasUnsafeEval = scriptSrcDirectives.includes("'unsafe-eval'");
+  const hasWildcard = scriptSrcDirectives.some(p => p === '*' || p === 'https:*');
   const hasNonce = /'nonce-[a-zA-Z0-9+/=_-]+'/i.test(cspHeader);
   const hasHash = /'(sha256|sha384|sha512)-[a-zA-Z0-9+/=_-]+'/i.test(cspHeader);
   const hasStrictDynamic = cspHeader.includes("'strict-dynamic'");
