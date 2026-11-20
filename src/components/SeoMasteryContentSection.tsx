@@ -23,6 +23,7 @@ import {
   Share2
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { dispatchDeepNavigation } from '../data/deepPages';
 
 export const SeoMasteryContentSection: React.FC = () => {
   const { t, isRtl } = useLanguage();
@@ -34,6 +35,11 @@ export const SeoMasteryContentSection: React.FC = () => {
     navigator.clipboard.writeText(text);
     setCopiedSnippet(id);
     setTimeout(() => setCopiedSnippet(null), 2000);
+  };
+
+  const handleDeepLink = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
+    e.preventDefault();
+    dispatchDeepNavigation(path);
   };
 
   const handleScrollToAudit = () => {
@@ -206,7 +212,11 @@ export const SeoMasteryContentSection: React.FC = () => {
               </div>
 
               <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
-                تعتبر سرعة تحميل الموقع وتجربة الاستجابة من أهم العوامل الحاسمة التي تعتمد عليها خوارزميات جوجل لتحديد الترتيب الأول. المواقع البطيئة تعاني من معدل ارتداد مرتفع (Bounce Rate) وتفقد ثقة الزوار وروبوتات الفهرسة.
+                تعتبر سرعة تحميل الموقع وتجربة الاستجابة من أهم العوامل الحاسمة التي تعتمد عليها خوارزميات جوجل لتحديد الترتيب الأول. راجع دليلنا حول{' '}
+                <a href="/articles/core-web-vitals-speed" onClick={(e) => handleDeepLink(e, '/articles/core-web-vitals-speed')} className="text-indigo-600 dark:text-indigo-400 font-semibold underline">
+                  تحسين مؤشرات الويب الأساسية Core Web Vitals
+                </a>{' '}
+                لتفادي ارتفاع معدل الارتداد وفقدان ثقة روبوتات الفهرسة.
               </p>
 
               <div className="space-y-3 mb-5">
@@ -220,7 +230,11 @@ export const SeoMasteryContentSection: React.FC = () => {
                 <div className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-300">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                   <div>
-                    <strong className="text-slate-900 dark:text-white">أكبر رسم للمحتوى (LCP):</strong> اجعل المحتوى المرئي الأساسي يظهر في أقل من 2.5 ثانية عبر ضغط الصور بصيغ حديثة (WebP / AVIF) وتأجيل تحميل السكربتات غير الضرورية.
+                    <strong className="text-slate-900 dark:text-white">أكبر رسم للمحتوى (LCP):</strong> اجعل المحتوى المرئي الأساسي يظهر في أقل من 2.5 ثانية عبر{' '}
+                    <a href="/blog/image-seo-webp-avif" onClick={(e) => handleDeepLink(e, '/blog/image-seo-webp-avif')} className="text-indigo-600 dark:text-indigo-400 font-semibold underline">
+                      تحسين الصور بصيغ WebP و AVIF
+                    </a>{' '}
+                    وتأجيل تحميل السكربتات غير الضرورية.
                   </div>
                 </div>
 
@@ -268,7 +282,11 @@ export const SeoMasteryContentSection: React.FC = () => {
               </div>
 
               <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
-                المحتوى الاستثنائي لا يكفي بمفرده إذا لم تفهم خوارزميات محركات البحث بنيته المنطقية. يجب صياغة المحتوى للإجابة على نية الباحث (Search Intent) الحقيقية وتوزيع الكلمات المفتاحية بانسيابية دون حشو مصطنع.
+                المحتوى الاستثنائي لا يكفي بمفرده إذا لم تفهم خوارزميات محركات البحث بنيته المنطقية. تعرّف على قواعد{' '}
+                <a href="/topics/on-page-seo" onClick={(e) => handleDeepLink(e, '/topics/on-page-seo')} className="text-emerald-600 dark:text-emerald-400 font-semibold underline">
+                  هيكلة السيو الداخلي وضبط وسوم العناوين H1-H6
+                </a>{' '}
+                وتوزيع الكلمات المفتاحية بانسيابية وفق نية الباحث.
               </p>
 
               <div className="space-y-3 mb-5">
@@ -330,28 +348,44 @@ export const SeoMasteryContentSection: React.FC = () => {
               </div>
 
               <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
-                تخصص محركات البحث وقتاً وموارداً محددة للزحف في كل موقع (Crawl Budget). توجيه عناكب جوجل عبر ملف Robots.txt وخريطة الموقع XML يضمن أرشفة صفحاتك الجديدة في غضون دقائق ومنع إهدار الوقت في الصفحات المكررة.
+                تخصص محركات البحث وقتاً وموارداً محددة للزحف في كل موقع (Crawl Budget). اتبع{' '}
+                <a href="/articles/technical-seo-checklist-2026" onClick={(e) => handleDeepLink(e, '/articles/technical-seo-checklist-2026')} className="text-amber-600 dark:text-amber-400 font-semibold underline">
+                  قائمة تدقيق السيو التقني لعام 2026
+                </a>{' '}
+                لضمان أرشفة صفحاتك الجديدة ومنع إهدار الزحف في الصفحات المكررة.
               </p>
 
               <div className="space-y-3 mb-5">
                 <div className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-300">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                   <div>
-                    <strong className="text-slate-900 dark:text-white">ملف Robots.txt منضبط:</strong> اسمح بالزحف لكافة روبوتات جوجل الشرعية (Googlebot)، مع حظر لوحات التحكم وروابط البحث الداخلي غير المفيدة.
+                    <strong className="text-slate-900 dark:text-white">ملف Robots.txt منضبط:</strong> اسمح بالزحف لكافة روبوتات جوجل الشرعية عبر{' '}
+                    <a href="/features/seo-code-generator" onClick={(e) => handleDeepLink(e, '/features/seo-code-generator')} className="text-amber-600 dark:text-amber-400 font-semibold underline">
+                      مولد ملفات Robots.txt وأكواد الميتا
+                    </a>{' '}
+                    مع حظر لوحات التحكم غير المفيدة.
                   </div>
                 </div>
 
                 <div className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-300">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                   <div>
-                    <strong className="text-slate-900 dark:text-white">إصلاح الروابط المعطلة (404 Broken Links):</strong> الروابط المعطلة تؤذي تجربة المستخدم وتستنزف الزحف. استخدم أداة فحص الروابط في منصتنا لاستبدالها أو إعادة توجيهها 301.
+                    <strong className="text-slate-900 dark:text-white">إصلاح الروابط المعطلة (404 Broken Links):</strong> الروابط المعطلة تؤذي تجربة المستخدم وتستنزف الزحف. استخدم{' '}
+                    <a href="/features/broken-links-checker" onClick={(e) => handleDeepLink(e, '/features/broken-links-checker')} className="text-amber-600 dark:text-amber-400 font-semibold underline">
+                      أداة فحص الروابط المعطلة 404
+                    </a>{' '}
+                    لاستبدالها أو إعادة توجيهها 301.
                   </div>
                 </div>
 
                 <div className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-300">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                   <div>
-                    <strong className="text-slate-900 dark:text-white">البيانات المنظمة Schema.org:</strong> أضف مخططات JSON-LD المناسبة (مثل Article أو FAQPage أو Product) للحصول على المقتطفات المميزة والنجوم التقييمية في صفحة النتائج.
+                    <strong className="text-slate-900 dark:text-white">البيانات المنظمة Schema.org:</strong> طالع دليل{' '}
+                    <a href="/topics/schema-structured-data" onClick={(e) => handleDeepLink(e, '/topics/schema-structured-data')} className="text-amber-600 dark:text-amber-400 font-semibold underline">
+                      تطبيق البيانات المنظمة JSON-LD للمقتطفات المميزة
+                    </a>{' '}
+                    (Article أو FAQPage أو Product).
                   </div>
                 </div>
               </div>
@@ -406,14 +440,21 @@ export const SeoMasteryContentSection: React.FC = () => {
                 <div className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-300">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                   <div>
-                    <strong className="text-slate-900 dark:text-white">شهادة أمان HTTPS معتمدة:</strong> جوجل تحذر الزوار فوراً من المواقع غير المشفرة، وتمنح ميزة الترتيب للمواقع التي تطبق شهادات SSL ورؤوس HSTS لحماية بيانات المستخدمين.
+                    <strong className="text-slate-900 dark:text-white">شهادة أمان HTTPS وترويسات الحماية:</strong> جوجل تمنح أفضلية للمواقع التي تطبق{' '}
+                    <a href="/topics/security-headers-csp" onClick={(e) => handleDeepLink(e, '/topics/security-headers-csp')} className="text-sky-600 dark:text-sky-400 font-semibold underline">
+                      ترويسات الأمان CSP و HSTS لحماية الزوار
+                    </a>.
                   </div>
                 </div>
 
                 <div className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-300">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                   <div>
-                    <strong className="text-slate-900 dark:text-white">بنية الربط الداخلي المحكمة (Silo Structure):</strong> اربط المقالات والصفحات ذات الصلة داخلياً لتعزيز سلطة الصفحات المستهدفة وتسهيل انتقال الزائر بين أقسام الموقع.
+                    <strong className="text-slate-900 dark:text-white">بنية الربط الداخلي المحكمة (Silo Structure):</strong> اتبع{' '}
+                    <a href="/articles/internal-linking-strategy" onClick={(e) => handleDeepLink(e, '/articles/internal-linking-strategy')} className="text-sky-600 dark:text-sky-400 font-semibold underline">
+                      استراتيجية بناء الروابط الداخلية والمجموعات العنقودية
+                    </a>{' '}
+                    لتعزيز سلطة الصفحات العميقة.
                   </div>
                 </div>
               </div>

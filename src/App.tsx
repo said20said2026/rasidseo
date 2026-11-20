@@ -71,11 +71,22 @@ import { Bookmark, BookmarkCheck, GitCompare, FileCode, FileSpreadsheet, Smartph
 import { SubNavbar } from './components/SubNavbar';
 import { FaqSection } from './components/FaqSection';
 import { SeoMasteryContentSection } from './components/SeoMasteryContentSection';
+import { HowSiteWorksSection } from './components/HowSiteWorksSection';
+import { InternalLinkingHubSection } from './components/InternalLinkingHubSection';
+import { DeepArticleModal } from './components/DeepArticleModal';
+import {
+  DEEP_ARTICLES,
+  DEEP_PAGE_ACTION_PATHS,
+  DeepArticleData,
+  dispatchDeepNavigation
+} from './data/deepPages';
 import { useLanguage } from './context/LanguageContext';
 import { apiFetch, parseJsonSafely } from './utils/apiConfig';
 
 // Assets
-const heroBanner = '/dashboard-preview.jpg';
+const heroBannerAvif = '/dashboard-preview.avif';
+const heroBannerWebp = '/dashboard-preview.webp';
+const heroBannerFallback = '/dashboard-preview.jpg';
 
 interface RecentAuditUrl {
   url: string;
@@ -100,6 +111,7 @@ export default function App() {
     isOpen: false,
     page: 'about'
   });
+  const [activeDeepArticle, setActiveDeepArticle] = useState<DeepArticleData | null>(null);
   const [recentUrls, setRecentUrls] = useState<RecentAuditUrl[]>([]);
   const [showHistoryDropdown, setShowHistoryDropdown] = useState(false);
   const historyDropdownRef = useRef<HTMLDivElement>(null);
@@ -353,9 +365,78 @@ export default function App() {
     handleRunAudit(selectedUrl);
   };
 
-  const openStaticPage = (page: StaticPageType) => {
+  const openStaticPage = (page: StaticPageType, pushPath?: string) => {
+    setActiveDeepArticle(null);
     setStaticPageModal({ isOpen: true, page });
+    if (pushPath && window.location.pathname !== pushPath) {
+      window.history.pushState({}, '', pushPath);
+    }
   };
+
+  // Handle client-side deep navigation (/articles/*, /blog/*, /topics/*, /features/*, /about, /faq, etc.)
+  useEffect(() => {
+    const resolveDeepRoute = (rawPath: string, shouldPushState: boolean) => {
+      const normalizedPath = rawPath.length > 1 && rawPath.endsWith('/') ? rawPath.slice(0, -1) : rawPath;
+
+      if (shouldPushState && window.location.pathname !== normalizedPath) {
+        window.history.pushState({}, '', normalizedPath);
+      }
+
+      const matchedArticle = DEEP_ARTICLES.find((a) => a.path === normalizedPath);
+      if (matchedArticle) {
+        setStaticPageModal((prev) => ({ ...prev, isOpen: false }));
+        setActiveDeepArticle(matchedArticle);
+        return;
+      }
+
+      const matchedAction = DEEP_PAGE_ACTION_PATHS[normalizedPath];
+      if (matchedAction) {
+        setActiveDeepArticle(null);
+        if (matchedAction.modalPage) {
+          setStaticPageModal({ isOpen: true, page: matchedAction.modalPage });
+          return;
+        }
+        setStaticPageModal((prev) => ({ ...prev, isOpen: false }));
+        if (matchedAction.sectionId) {
+          setTimeout(() => {
+            document.getElementById(matchedAction.sectionId!)?.scrollIntoView({ behavior: 'smooth' });
+          }, 80);
+        } else {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        return;
+      }
+
+      if (normalizedPath === '/') {
+        setActiveDeepArticle(null);
+        setStaticPageModal((prev) => ({ ...prev, isOpen: false }));
+      }
+    };
+
+    // Resolve initial URL on page load / direct deep link visit
+    if (window.location.pathname && window.location.pathname !== '/') {
+      resolveDeepRoute(window.location.pathname, false);
+    }
+
+    const handleDeepNavEvent = (ev: Event) => {
+      const customEv = ev as CustomEvent<{ path?: string }>;
+      const nextPath = customEv.detail?.path;
+      if (nextPath) {
+        resolveDeepRoute(nextPath, true);
+      }
+    };
+
+    const handlePopState = () => {
+      resolveDeepRoute(window.location.pathname || '/', false);
+    };
+
+    window.addEventListener('rasid-deep-navigate', handleDeepNavEvent as EventListener);
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('rasid-deep-navigate', handleDeepNavEvent as EventListener);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
 
   const loadingSteps = [
     'جاري الاتصال بالخادم وفحص استجابة الرابط (HTTP Status)...',
@@ -864,19 +945,24 @@ export default function App() {
             {/* Right Col: Visual Mockup / Hero Image */}
             <div className="lg:col-span-5">
               <div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-xl bg-slate-900">
-                <img
-                  src={heroBanner}
-                  alt="لوحة فحص وتحليل السيو التقني للمواقع والمدونات"
-                  width={800}
-                  height={450}
-                  loading="eager"
-                  decoding="async"
-                  referrerPolicy="no-referrer"
-                  className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-700"
-                  onError={(e) => {
-                    (e.target as HTMLElement).style.display = 'none';
-                  }}
-                />
+                <picture>
+                  <source srcSet={heroBannerAvif} type="image/avif" />
+                  <source srcSet={heroBannerWebp} type="image/webp" />
+                  <img
+                    src={heroBannerFallback}
+                    alt="لوحة فحص وتحليل السيو التقني للمواقع والمدونات"
+                    width={800}
+                    height={447}
+                    loading="eager"
+                    decoding="async"
+                    fetchPriority="high"
+                    referrerPolicy="no-referrer"
+                    className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-700"
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = 'none';
+                    }}
+                  />
+                </picture>
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-5">
                   <div className="text-white">
                     <p className="text-xs font-mono text-indigo-300">الرصد الفوري والتقارير الاحترافية</p>
@@ -2130,11 +2216,17 @@ export default function App() {
         </main>
       )}
 
+      {/* How RasidSEO Works - 600-word SEO Guide */}
+      <HowSiteWorksSection />
+
       {/* SEO Educational Guide & Ranking Authority Section */}
       <SeoMasteryContentSection />
 
+      {/* Internal Linking Hub & Topic Silos (شبكة الروابط الداخلية والمقالات العميقة) */}
+      <InternalLinkingHubSection />
+
       {/* Frequently Asked Questions Section (قسم الأسئلة الشائعة) */}
-      <FaqSection onContactClick={() => openStaticPage('contact')} />
+      <FaqSection onContactClick={() => openStaticPage('contact', '/contact')} />
 
       {/* Social Media Share Bar Section */}
       <section className="bg-slate-950 pt-10 pb-6 border-t border-slate-900">
@@ -2160,9 +2252,10 @@ export default function App() {
             <div className="flex flex-col sm:items-end gap-3 text-xs font-medium">
               <div className="flex items-center gap-5 text-slate-400 flex-wrap">
                 <a
-                  href="#"
+                  href="/"
                   onClick={(e) => {
                     e.preventDefault();
+                    dispatchDeepNavigation('/');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
                   className="hover:text-white transition-colors"
@@ -2190,84 +2283,140 @@ export default function App() {
                 <a href="/#results-section" className="hover:text-white transition-colors">
                   {t('nav.audit_report', 'تقرير الفحص')}
                 </a>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (auditData) {
-                      document.getElementById('seo-checklist-section')?.scrollIntoView({ behavior: 'smooth' });
-                    } else {
-                      document.getElementById('guide-section')?.scrollIntoView({ behavior: 'smooth' });
-                    }
+                <a
+                  href="/articles/technical-seo-checklist-2026"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    dispatchDeepNavigation('/articles/technical-seo-checklist-2026');
                   }}
                   className="hover:text-white transition-colors cursor-pointer flex items-center gap-1.5 text-amber-400 hover:text-amber-300 font-semibold"
                 >
                   <Wrench className="w-3.5 h-3.5 text-amber-400" />
                   <span>{t('nav.fix_guide', 'دليل إصلاح الأخطاء')}</span>
-                </button>
-                <a href="/#tools-section" className="hover:text-white transition-colors">
+                </a>
+                <a
+                  href="/features/seo-code-generator"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    dispatchDeepNavigation('/features/seo-code-generator');
+                  }}
+                  className="hover:text-white transition-colors"
+                >
                   {t('nav.code_generator', 'مولد الأكواد')}
                 </a>
-                <a href="/#guide-section" className="hover:text-white transition-colors">
-                  {t('nav.seo_guide', 'دليل السيو')}
+                <a
+                  href="/articles/how-rasidseo-works"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    dispatchDeepNavigation('/articles/how-rasidseo-works');
+                  }}
+                  className="hover:text-white transition-colors"
+                >
+                  كيف يعمل راصد سيو
                 </a>
-                <a href="/#faq-section" className="hover:text-white transition-colors">
+                <a
+                  href="/topics/on-page-seo"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    dispatchDeepNavigation('/topics/on-page-seo');
+                  }}
+                  className="hover:text-white transition-colors"
+                >
+                  {t('nav.seo_guide', 'هيكلة السيو الداخلي')}
+                </a>
+                <a
+                  href="/blog/image-seo-webp-avif"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    dispatchDeepNavigation('/blog/image-seo-webp-avif');
+                  }}
+                  className="hover:text-white transition-colors"
+                >
+                  سيو الصور WebP و AVIF
+                </a>
+                <a
+                  href="/faq"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    dispatchDeepNavigation('/faq');
+                  }}
+                  className="hover:text-white transition-colors"
+                >
                   {t('nav.faq', 'الأسئلة الشائعة')}
                 </a>
                 <a href="/sitemap.xml" className="hover:text-white transition-colors">
-                  Sitemap
+                  خريطة الموقع XML
                 </a>
               </div>
 
               {/* Dedicated Essential Pages Links */}
               <div className="flex items-center gap-4 text-slate-400 flex-wrap pt-2 border-t border-slate-800/80">
-                <button
-                  type="button"
-                  onClick={() => openStaticPage('about')}
+                <a
+                  href="/about"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    openStaticPage('about', '/about');
+                  }}
                   className="hover:text-indigo-400 transition-colors cursor-pointer"
                 >
                   من نحن
-                </button>
+                </a>
                 <span className="text-slate-700" aria-hidden="true">·</span>
-                <button
-                  type="button"
-                  onClick={() => openStaticPage('disclaimer')}
+                <a
+                  href="/disclaimer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    openStaticPage('disclaimer', '/disclaimer');
+                  }}
                   className="hover:text-amber-400 transition-colors cursor-pointer font-medium"
                 >
                   إخلاء مسؤولية
-                </button>
+                </a>
                 <span className="text-slate-700" aria-hidden="true">·</span>
-                <button
-                  type="button"
-                  onClick={() => openStaticPage('help')}
+                <a
+                  href="/help"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    openStaticPage('help', '/help');
+                  }}
                   className="hover:text-indigo-400 transition-colors cursor-pointer font-medium flex items-center gap-1.5 text-slate-300"
                 >
                   <span>مركز المساعدة</span>
                   <span className="px-1.5 py-0.2 text-[9px] bg-indigo-900/80 text-indigo-300 rounded font-bold border border-indigo-700/50">FAQ</span>
-                </button>
+                </a>
                 <span className="text-slate-700" aria-hidden="true">·</span>
-                <button
-                  type="button"
-                  onClick={() => openStaticPage('privacy')}
+                <a
+                  href="/privacy"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    openStaticPage('privacy', '/privacy');
+                  }}
                   className="hover:text-indigo-400 transition-colors cursor-pointer"
                 >
                   سياسة الخصوصية
-                </button>
+                </a>
                 <span className="text-slate-700" aria-hidden="true">·</span>
-                <button
-                  type="button"
-                  onClick={() => openStaticPage('terms')}
+                <a
+                  href="/terms"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    openStaticPage('terms', '/terms');
+                  }}
                   className="hover:text-indigo-400 transition-colors cursor-pointer"
                 >
                   شروط الخدمة
-                </button>
+                </a>
                 <span className="text-slate-700" aria-hidden="true">·</span>
-                <button
-                  type="button"
-                  onClick={() => openStaticPage('contact')}
+                <a
+                  href="/contact"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    openStaticPage('contact', '/contact');
+                  }}
                   className="hover:text-indigo-400 transition-colors cursor-pointer"
                 >
                   اتصل بنا
-                </button>
+                </a>
               </div>
             </div>
           </div>
@@ -2283,8 +2432,28 @@ export default function App() {
       <StaticPageModal
         isOpen={staticPageModal.isOpen}
         activePage={staticPageModal.page}
-        onClose={() => setStaticPageModal((prev) => ({ ...prev, isOpen: false }))}
-        onSelectPage={(page) => setStaticPageModal({ isOpen: true, page })}
+        onClose={() => {
+          setStaticPageModal((prev) => ({ ...prev, isOpen: false }));
+          if (window.location.pathname !== '/') {
+            window.history.pushState({}, '', '/');
+          }
+        }}
+        onSelectPage={(page) => openStaticPage(page, `/${page}`)}
+      />
+
+      {/* Deep Article & Topic Cluster Reader Modal */}
+      <DeepArticleModal
+        article={activeDeepArticle}
+        onClose={() => {
+          setActiveDeepArticle(null);
+          if (window.location.pathname !== '/') {
+            window.history.pushState({}, '', '/');
+          }
+        }}
+        onStartAuditClick={() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          setTimeout(() => document.getElementById('audit-input')?.focus(), 200);
+        }}
       />
 
       {/* Side-by-Side Report Comparison Modal */}
