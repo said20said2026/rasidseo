@@ -369,8 +369,8 @@ export const SeoMasteryContentSection: React.FC = () => {
                     <span>{copiedSnippet === 'schema-code' ? 'تم النسخ' : 'نسخ'}</span>
                   </button>
                 </div>
-                <code className="block font-mono text-[11px] text-amber-400 select-all overflow-x-auto">
-                  {`{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"...","acceptedAnswer":{"@type":"Answer","text":"..."}}]}`}
+                <code className="block font-mono text-[11px] text-amber-400 select-all overflow-x-auto whitespace-pre">
+                  {`{\n  "@context": "https://schema.org",\n  "@type": "FAQPage",\n  "mainEntity": [{\n    "@type": "Question",\n    "name": "كيف أحسن سيو موقعي؟",\n    "acceptedAnswer": { "@type": "Answer", "text": "باتباع إرشادات السيو التقني وسرعة الصفحة." }\n  }]\n}`}
                 </code>
               </div>
             </section>
