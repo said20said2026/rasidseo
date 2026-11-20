@@ -1829,6 +1829,190 @@ app.post('/api/validate-schema', (req: Request, res: Response) => {
   }
 });
 
+// Translation Cache & Language Code Normalizer
+const serverTranslationCache = new Map<string, string>();
+const MAX_TRANSLATION_CACHE_SIZE = 12000;
+
+function normalizeTranslateTargetCode(code: string): string {
+  const clean = (code || 'en').trim();
+  const map: Record<string, string> = {
+    'zh-TW': 'zh_TW',
+    'pt-BR': 'pt',
+    'ku': 'ckb',
+    'iw': 'he',
+    'tl': 'tl'
+  };
+  return map[clean] || clean;
+}
+
+async function fetchBatchGoogleTranslate(texts: string[], tl: string): Promise<string[]> {
+  const params = new URLSearchParams();
+  params.set('client', 'dict-chrome-ex');
+  params.set('sl', 'ar');
+  params.set('tl', tl);
+  for (const t of texts) {
+    params.append('q', t);
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 6000);
+  try {
+    const resp = await fetch(`https://clients5.google.com/translate_a/t?${params.toString()}`, {
+      method: 'GET',
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
+    if (!resp.ok) {
+      throw new Error(`HTTP ${resp.status}`);
+    }
+    const json = await resp.json();
+    if (Array.isArray(json)) {
+      return texts.map((orig, idx) => {
+        const entry = json[idx];
+        if (typeof entry === 'string' && entry.trim()) return entry;
+        if (Array.isArray(entry) && typeof entry[0] === 'string' && entry[0].trim()) return entry[0];
+        return orig;
+      });
+    }
+    if (typeof json === 'string' && texts.length === 1) {
+      return [json];
+    }
+    throw new Error('Unexpected translate payload');
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function fetchSingleMyMemoryTranslate(text: string, tl: string): Promise<string> {
+  const mmCode = tl === 'zh_TW' ? 'zh-TW' : tl === 'ckb' ? 'ku' : tl;
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.slice(0, 480))}&langpair=${encodeURIComponent(`ar|${mmCode}`)}`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
+  try {
+    const resp = await fetch(url, { signal: controller.signal });
+    if (!resp.ok) return text;
+    const data: any = await resp.json();
+    const out = data?.responseData?.translatedText;
+    if (typeof out === 'string' && out.trim() && !out.includes('MYMEMORY WARNING')) {
+      return out.trim();
+    }
+    return text;
+  } catch {
+    return text;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// API: Fast Batch Website UI & Content Translation
+app.post('/api/translate', async (req: Request, res: Response) => {
+  try {
+    const { targetLang, texts } = req.body || {};
+    if (!targetLang || typeof targetLang !== 'string') {
+      return res.status(400).json({ success: false, error: 'targetLang is required' });
+    }
+    if (!Array.isArray(texts) || texts.length === 0) {
+      return res.json({ success: true, targetLang, translations: {} });
+    }
+
+    const tl = normalizeTranslateTargetCode(targetLang);
+    if (tl === 'ar') {
+      const identity: Record<string, string> = {};
+      texts.forEach((t: any) => {
+        if (typeof t === 'string') identity[t] = t;
+      });
+      return res.json({ success: true, targetLang, translations: identity });
+    }
+
+    const uniqueTexts: string[] = [];
+    const seen = new Set<string>();
+    for (const raw of texts.slice(0, 60)) {
+      if (typeof raw === 'string') {
+        const clean = raw.trim();
+        if (clean && clean.length <= 2500 && !seen.has(clean)) {
+          seen.add(clean);
+          uniqueTexts.push(clean);
+        }
+      }
+    }
+
+    const resultMap: Record<string, string> = {};
+    const missing: string[] = [];
+
+    for (const text of uniqueTexts) {
+      const cacheKey = `${tl}::${text}`;
+      const cached = serverTranslationCache.get(cacheKey);
+      if (cached) {
+        resultMap[text] = cached;
+      } else {
+        missing.push(text);
+      }
+    }
+
+    // Group missing texts into URL-length-safe batches (max 12 items or ~1400 raw chars)
+    const batches: string[][] = [];
+    let currentBatch: string[] = [];
+    let currentChars = 0;
+
+    for (const text of missing) {
+      if (currentBatch.length >= 12 || currentChars + text.length > 1400) {
+        if (currentBatch.length > 0) batches.push(currentBatch);
+        currentBatch = [text];
+        currentChars = text.length;
+      } else {
+        currentBatch.push(text);
+        currentChars += text.length;
+      }
+    }
+    if (currentBatch.length > 0) batches.push(currentBatch);
+
+    // Execute up to 4 batches concurrently
+    const CONCURRENCY = 4;
+    for (let i = 0; i < batches.length; i += CONCURRENCY) {
+      const slice = batches.slice(i, i + CONCURRENCY);
+      await Promise.all(
+        slice.map(async (batch) => {
+          try {
+            const translated = await fetchBatchGoogleTranslate(batch, tl);
+            batch.forEach((src, idx) => {
+              const out = translated[idx] || src;
+              resultMap[src] = out;
+              if (out !== src) {
+                if (serverTranslationCache.size >= MAX_TRANSLATION_CACHE_SIZE) {
+                  serverTranslationCache.clear();
+                }
+                serverTranslationCache.set(`${tl}::${src}`, out);
+              }
+            });
+          } catch {
+            // Fallback per-item for short UI labels if batch failed
+            await Promise.all(
+              batch.map(async (src) => {
+                const out = src.length <= 450 ? await fetchSingleMyMemoryTranslate(src, tl) : src;
+                resultMap[src] = out;
+                if (out !== src) {
+                  serverTranslationCache.set(`${tl}::${src}`, out);
+                }
+              })
+            );
+          }
+        })
+      );
+    }
+
+    return res.json({
+      success: true,
+      targetLang,
+      translations: resultMap
+    });
+  } catch (err: any) {
+    console.error('Error in /api/translate:', err);
+    return res.status(500).json({ success: false, error: 'Translation failed' });
+  }
+});
+
 // API: Simulate Core Web Vitals optimization scenarios
 app.post('/api/simulate-cwv', (req: Request, res: Response) => {
   try {

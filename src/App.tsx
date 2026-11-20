@@ -95,7 +95,7 @@ interface RecentAuditUrl {
 }
 
 export default function App() {
-  const { t, currentLanguage, isRtl, setLanguage } = useLanguage();
+  const { t, currentLanguage, isRtl, isTranslating, setLanguage } = useLanguage();
   const [urlInput, setUrlInput] = useState('');
   const [enableAi, setEnableAi] = useState(true);
   const [turboMode, setTurboMode] = useState(true);
@@ -701,17 +701,24 @@ export default function App() {
       {/* Top Language Alert Banner when non-Arabic is active */}
       {currentLanguage.code !== 'ar' && (
         <div className="bg-indigo-600 dark:bg-indigo-700 text-white px-4 py-2 text-xs flex items-center justify-between transition-colors shadow-xs z-30">
-          <div className="flex items-center gap-2">
-            <span className="text-base select-none">{currentLanguage.flag}</span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-base select-none" translate="no">{currentLanguage.flag}</span>
             <span>
               {t('banner.viewing_in', 'يتم عرض الموقع حالياً باللغة:')}{' '}
-              <strong className="underline underline-offset-2">{currentLanguage.name} ({currentLanguage.nameAr})</strong>
+              <strong className="underline underline-offset-2" translate="no">{currentLanguage.name}</strong>
+              <span className="opacity-90 mx-1">({currentLanguage.nameAr})</span>
             </span>
+            {isTranslating && (
+              <span className="inline-flex items-center gap-1 bg-white/15 px-2 py-0.5 rounded-md text-[11px] font-medium">
+                <RefreshCw className="w-3 h-3 animate-spin" />
+                <span>جاري الترجمة...</span>
+              </span>
+            )}
           </div>
           <button
             type="button"
             onClick={() => setLanguage('ar')}
-            className="text-[11px] font-bold bg-white/20 hover:bg-white/30 text-white px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+            className="text-[11px] font-bold bg-white/20 hover:bg-white/30 text-white px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0"
           >
             {t('banner.switch_back_ar', 'العودة للغة العربية 🇸🇦')}
           </button>

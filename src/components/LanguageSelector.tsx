@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Globe, ChevronDown, Search, Check, X, Sparkles } from 'lucide-react';
+import { Globe, ChevronDown, Search, Check, X, Sparkles, Loader2 } from 'lucide-react';
 import { WORLD_LANGUAGES, LanguageItem } from '../data/languages';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -12,7 +12,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   className = '',
   onLanguageChange
 }) => {
-  const { currentLanguage, setLanguage, t } = useLanguage();
+  const { currentLanguage, setLanguage, isTranslating } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [notification, setNotification] = useState<string | null>(null);
@@ -92,17 +92,21 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
         aria-haspopup="listbox"
         title={`اختر لغة الموقع والتقارير (${WORLD_LANGUAGES.length} لغة عالمية متوفرة)`}
       >
-        <span className="text-sm select-none" role="img" aria-label={currentLanguage.name}>
+        <span className="text-sm select-none" role="img" aria-label={currentLanguage.name} translate="no">
           {currentLanguage.flag}
         </span>
-        <span className="font-bold tracking-tight max-w-[85px] sm:max-w-[110px] truncate text-slate-800 dark:text-slate-100">
+        <span className="font-bold tracking-tight max-w-[85px] sm:max-w-[110px] truncate text-slate-800 dark:text-slate-100" translate="no">
           {currentLanguage.name}
         </span>
-        <ChevronDown
-          className={`w-3.5 h-3.5 text-slate-400 dark:text-slate-500 transition-transform duration-200 ${
-            isOpen ? 'rotate-180 text-indigo-600 dark:text-indigo-400' : ''
-          }`}
-        />
+        {isTranslating ? (
+          <Loader2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 animate-spin" />
+        ) : (
+          <ChevronDown
+            className={`w-3.5 h-3.5 text-slate-400 dark:text-slate-500 transition-transform duration-200 ${
+              isOpen ? 'rotate-180 text-indigo-600 dark:text-indigo-400' : ''
+            }`}
+          />
+        )}
       </button>
 
       {/* Temporary Toast feedback banner right next to selector */}
@@ -223,6 +227,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
                       <div className="text-right truncate">
                         <div className="flex items-center gap-1.5 truncate">
                           <span
+                            translate="no"
                             className={`truncate ${
                               isSelected
                                 ? 'text-indigo-700 dark:text-indigo-300 font-extrabold'
@@ -250,7 +255,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
                     </div>
 
                     <div className="flex items-center gap-1.5 shrink-0 pr-2">
-                      <span className="font-mono text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700">
+                      <span translate="no" className="font-mono text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700">
                         {lang.code}
                       </span>
                       {isSelected && (

@@ -1,14 +1,35 @@
+import { apiFetch, parseJsonSafely } from './apiConfig';
+import { TRANSLATIONS, TranslationKey } from '../data/translations';
+
 /**
- * Full-Site Translation Engine
- * Synchronizes Google Translate across all 40 world languages
- * and provides client-side translations for instant responsive UI.
+ * React-Safe Full-Site Translation Engine
+ * - Never wraps nodes in <font> tags (prevents React Virtual DOM crashes)
+ * - Uses instant built-in dictionary + client/server cached /api/translate batching
+ * - Observes dynamically mounted modals, audit results, tabs, and attributes
+ * - Cleanly restores pristine Arabic when returning to 'ar'
  */
 
-// Cache of original Arabic texts before translation
-const originalTextsMap = new WeakMap<Node, string>();
+const ARABIC_CHAR_REGEX = /[\u0600-\u06FF]/;
+const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'CODE', 'PRE', 'TEXTAREA', 'SVG', 'PATH']);
+const TRANSLATABLE_ATTRS = ['placeholder', 'title', 'aria-label'] as const;
+
+// Track original Arabic text & attributes per DOM node/element
+const originalTextsMap = new WeakMap<Text, string>();
+const appliedLangMap = new WeakMap<Text, string>();
+const lastWrittenTextMap = new WeakMap<Text, string>();
+const trackedTextNodes = new Set<Text>();
+
+const originalAttrsMap = new WeakMap<Element, Record<string, string>>();
+const appliedAttrLangMap = new WeakMap<Element, Record<string, string>>();
+const lastWrittenAttrsMap = new WeakMap<Element, Record<string, string>>();
+const trackedAttrElements = new Set<Element>();
+
+// In-memory client cache: `${langCode}::${arabicTrimmed}` -> translated string
+const clientTranslationCache = new Map<string, string>();
+const LOCAL_CACHE_PREFIX = 'rasid_i18n_v1_';
+const MAX_PERSISTED_PER_LANG = 800;
 
 export const FULL_SITE_PHRASES: Record<string, Record<string, string>> = {
-  // Common UI words across the entire site
   'المنصة الرائدة لفحص وتدقيق أخطاء السيو والمواقع والمدونات 2026': {
     en: 'Leading 2026 Platform for SEO Audit & Website Error Detection',
     fr: 'Plateforme leader 2026 d’audit SEO et détection d’erreurs de sites',
@@ -28,46 +49,6 @@ export const FULL_SITE_PHRASES: Record<string, Record<string, string>> = {
     'zh-CN': '全面检测您的网站与博客，找出阻碍您在',
     ru: 'Проверьте сайт и найдите ошибки, мешающие ранжированию в',
     ja: 'サイトを診断し、掲載順位を妨げているエラーを発見：'
-  },
-  'أداة متكاملة لتحليل السيو الداخلي (On-Page SEO)، والسرعة، وهيكل العناوين H1-H6، ووسوم الميتا، وفحص ملفات الروبوتات وخريطة الموقع مع توليد فوري للأكواد واستشارة ذكاء اصطناعي ذكية.': {
-    en: 'All-in-one suite for On-Page SEO, speed, H1-H6 structure, meta tags, robots.txt, sitemaps, instant code fixes & AI consultation.',
-    fr: 'Suite complète pour le SEO On-Page, la vitesse, structure H1-H6, balises méta, robots.txt, sitemap et conseils IA.',
-    es: 'Herramienta integral para SEO On-Page, velocidad, estructura H1-H6, metaetiquetas, robots.txt, sitemaps y consultoría de IA.',
-    de: 'Komplettlösung für On-Page-SEO, Geschwindigkeit, H1-H6-Hierarchie, Meta-Tags, robots.txt, Sitemaps und KI-Beratung.',
-    tr: 'Sayfa İçi SEO, hız, H1-H6 hiyerarşisi, meta etiketler, robots.txt, site haritası ve yapay zeka danışmanlığı tek bir araçta.',
-    'zh-CN': '集页面SEO、加载速度、H1-H6标题层级、元标签、robots.txt、站点地图与智能AI咨询于一体的专业工具。',
-    ru: 'Комплексный инструмент для On-Page SEO, скорости, структуры H1-H6, мета-тегов, robots.txt, sitemap и рекомендаций ИИ.',
-    ja: '内部SEO、表示速度、H1-H6構造、メタタグ、robots.txt、サイトマップ、AI診断を備えた総合ツール。'
-  },
-  'أدخل رابط موقعك أو مدونتك (مثال: example.com)': {
-    en: 'Enter your website or blog URL (e.g. example.com)',
-    fr: 'Entrez l’URL de votre site ou blog (ex: example.com)',
-    es: 'Ingrese la URL de su sitio o blog (ej: example.com)',
-    de: 'Website-URL eingeben (z. B. example.com)',
-    tr: 'Web sitesi veya blog URL girin (ör: example.com)',
-    'zh-CN': '输入您的网站或博客网址 (例如: example.com)',
-    ru: 'Введите адрес сайта (например: example.com)',
-    ja: 'サイトのURLを入力 (例: example.com)'
-  },
-  'فحص وتدقيق الموقع': {
-    en: 'Audit & Inspect Website',
-    fr: 'Auditer le site web',
-    es: 'Auditar sitio web',
-    de: 'Website prüfen',
-    tr: 'Siteyi Denetle',
-    'zh-CN': '立即全面分析网站',
-    ru: 'Проверить сайт',
-    ja: 'サイトを診断する'
-  },
-  'جاري الفحص...': {
-    en: 'Auditing in progress...',
-    fr: 'Analyse en cours...',
-    es: 'Auditando...',
-    de: 'Wird geprüft...',
-    tr: 'Denetleniyor...',
-    'zh-CN': '正在检测中...',
-    ru: 'Выполняется проверка...',
-    ja: '診断中...'
   },
   'تقييم السيو العام': {
     en: 'Overall SEO Score',
@@ -108,218 +89,436 @@ export const FULL_SITE_PHRASES: Record<string, Record<string, string>> = {
     'zh-CN': '已通过的标准测试项',
     ru: 'Успешно пройденные тесты',
     ja: '合格した検証項目'
-  },
-  'مؤشرات أداء الويب الأساسية (Core Web Vitals)': {
-    en: 'Core Web Vitals & Live Performance Monitor',
-    fr: 'Signaux Web essentiels (Core Web Vitals)',
-    es: 'Métricas Web Principales (Core Web Vitals)',
-    de: 'Core Web Vitals & Live-Geschwindigkeit',
-    tr: 'Önemli Web Verileri (Core Web Vitals)',
-    'zh-CN': '核心网页体验指标 (Core Web Vitals)',
-    ru: 'Основные показатели Web Vitals',
-    ja: 'Core Web Vitals＆リアルタイムモニター'
-  },
-  'شجرة العناوين وهيكل H1-H6': {
-    en: 'Headings Structure & Hierarchy (H1-H6)',
-    fr: 'Hiérarchie des titres (H1-H6)',
-    es: 'Estructura de Encabezados (H1-H6)',
-    de: 'Überschriftenstruktur (H1-H6)',
-    tr: 'Başlık Hiyerarşisi (H1-H6)',
-    'zh-CN': 'H1-H6 标题层级结构树',
-    ru: 'Структура заголовков H1-H6',
-    ja: '見出し構造と階層 (H1-H6)'
-  },
-  'فاحص الروابط الخارجية (External Link Checker 404)': {
-    en: 'External Link & 404 Checker',
-    fr: 'Vérificateur de liens 404',
-    es: 'Verificador de enlaces rotos 404',
-    de: '404-Fehlerprüfung für Links',
-    tr: '404 Kırık Bağlantı Kontrolü',
-    'zh-CN': '404 死链与外链检测器',
-    ru: 'Проверка битых ссылок 404',
-    ja: '404リンク＆外部リンクチェッカー'
-  },
-  'تصدير تقرير PDF': {
-    en: 'Export PDF Report',
-    fr: 'Exporter Rapport PDF',
-    es: 'Exportar Informe PDF',
-    de: 'PDF-Bericht exportieren',
-    tr: 'PDF Raporu İndir',
-    'zh-CN': '导出 PDF 报告',
-    ru: 'Экспорт отчета в PDF',
-    ja: 'PDFレポートを出力'
-  },
-  'تصدير JSON': {
-    en: 'Export JSON',
-    fr: 'Exporter JSON',
-    es: 'Exportar JSON',
-    de: 'JSON exportieren',
-    tr: 'JSON İndir',
-    'zh-CN': '导出 JSON',
-    ru: 'Экспорт в JSON',
-    ja: 'JSON出力'
-  },
-  'قائمة المهام التنفيذية': {
-    en: 'Actionable Task Checklist',
-    fr: 'Liste des tâches d’action',
-    es: 'Lista de tareas accionables',
-    de: 'Aufgaben-Checkliste',
-    tr: 'Uygulanabilir Görev Listesi',
-    'zh-CN': '可执行优化清单',
-    ru: 'Список практических задач',
-    ja: '実行タスクチェックリスト'
-  },
-  'مشاركة التقرير': {
-    en: 'Share Report',
-    fr: 'Partager le rapport',
-    es: 'Compartir informe',
-    de: 'Bericht teilen',
-    tr: 'Raporu Paylaş',
-    'zh-CN': '分享诊断报告',
-    ru: 'Поделиться отчетом',
-    ja: 'レポートを共有'
-  },
-  'حفظ التقرير': {
-    en: 'Save Report',
-    fr: 'Enregistrer le rapport',
-    es: 'Guardar informe',
-    de: 'Bericht speichern',
-    tr: 'Raporu Kaydet',
-    'zh-CN': '保存诊断报告',
-    ru: 'Сохранить отчет',
-    ja: 'レポートを保存'
-  },
-  'وضع الإصلاح السريع': {
-    en: 'Quick Fix Mode',
-    fr: 'Mode correction rapide',
-    es: 'Modo arreglo rápido',
-    de: 'Schnellreparatur-Modus',
-    tr: 'Hızlı Onarım Modu',
-    'zh-CN': '快速修复模式',
-    ru: 'Режим быстрого исправления',
-    ja: 'クイック修正モード'
-  },
-  'التصنيفات المخصصة': {
-    en: 'Custom Categories',
-    fr: 'Catégories personnalisées',
-    es: 'Categorías personalizadas',
-    de: 'Eigene Kategorien',
-    tr: 'Özel Kategoriler',
-    'zh-CN': '自定义分类管理',
-    ru: 'Пользовательские категории',
-    ja: 'カスタムカテゴリ管理'
   }
 };
 
-/**
- * Triggers Google Translate element across all 40 world languages
- */
-export function triggerGoogleTranslate(langCode: string): void {
-  try {
-    const gtCode = langCode === 'he' ? 'iw' : langCode === 'pt-BR' ? 'pt' : langCode;
+// Build fast Arabic->Target lookup from static TRANSLATIONS dictionary
+function lookupStaticDictionary(arabicTrimmed: string, langCode: string): string | null {
+  const phraseHit = FULL_SITE_PHRASES[arabicTrimmed];
+  if (phraseHit && phraseHit[langCode]) {
+    return phraseHit[langCode];
+  }
 
-    if (langCode === 'ar') {
-      // Revert to original Arabic
-      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=${window.location.hostname}; path=/;`;
-      
-      const combo = document.querySelector('.goog-te-combo') as HTMLSelectElement | null;
-      if (combo) {
-        combo.value = 'ar';
-        combo.dispatchEvent(new Event('change'));
-      }
-    } else {
-      // Set translation cookie
-      const cookieValue = `/ar/${gtCode}`;
-      document.cookie = `googtrans=${cookieValue}; path=/;`;
-      document.cookie = `googtrans=${cookieValue}; domain=${window.location.hostname}; path=/;`;
-
-      const combo = document.querySelector('.goog-te-combo') as HTMLSelectElement | null;
-      if (combo) {
-        combo.value = gtCode;
-        combo.dispatchEvent(new Event('change'));
-      } else {
-        // Poll for Google Translate select combo to mount
-        let attempts = 0;
-        const interval = setInterval(() => {
-          attempts++;
-          const c = document.querySelector('.goog-te-combo') as HTMLSelectElement | null;
-          if (c) {
-            c.value = gtCode;
-            c.dispatchEvent(new Event('change'));
-            clearInterval(interval);
-          } else if (attempts > 30) {
-            clearInterval(interval);
-          }
-        }, 100);
+  const arDict = TRANSLATIONS.ar;
+  const targetDict = TRANSLATIONS[langCode];
+  if (arDict && targetDict) {
+    for (const key of Object.keys(arDict) as TranslationKey[]) {
+      if (arDict[key] === arabicTrimmed && targetDict[key]) {
+        return targetDict[key]!;
       }
     }
-  } catch (e) {
-    console.warn('Failed to trigger Google Translate', e);
+  }
+
+  return null;
+}
+
+function hydrateCacheFromStorage(langCode: string) {
+  try {
+    const raw = localStorage.getItem(`${LOCAL_CACHE_PREFIX}${langCode}`);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === 'object') {
+      Object.entries(parsed).forEach(([src, dst]) => {
+        if (typeof dst === 'string' && dst.trim()) {
+          clientTranslationCache.set(`${langCode}::${src}`, dst);
+        }
+      });
+    }
+  } catch {
+    // ignore storage errors
   }
 }
 
-/**
- * Client-Side DOM text translator:
- * Translates text nodes in the DOM to ensure complete responsiveness
- * even when Google Translate is still loading or running offline.
- */
-export function translateDomTextNodes(langCode: string): void {
-  if (typeof document === 'undefined') return;
+function persistLangCacheToStorage(langCode: string) {
+  try {
+    const entries: Record<string, string> = {};
+    let count = 0;
+    const prefix = `${langCode}::`;
+    clientTranslationCache.forEach((val, key) => {
+      if (key.startsWith(prefix) && count < MAX_PERSISTED_PER_LANG) {
+        entries[key.slice(prefix.length)] = val;
+        count++;
+      }
+    });
+    localStorage.setItem(`${LOCAL_CACHE_PREFIX}${langCode}`, JSON.stringify(entries));
+  } catch {
+    // ignore quota errors
+  }
+}
 
-  const walker = document.createTreeWalker(
-    document.body,
-    NodeFilter.SHOW_TEXT,
-    {
-      acceptNode(node) {
-        // Skip scripts, styles, and inputs
-        const parent = node.parentElement;
-        if (!parent) return NodeFilter.FILTER_REJECT;
-        const tag = parent.tagName.toLowerCase();
-        if (tag === 'script' || tag === 'style' || tag === 'noscript' || tag === 'code' || tag === 'pre') {
-          return NodeFilter.FILTER_REJECT;
+function getCachedTranslation(arabicTrimmed: string, langCode: string): string | null {
+  const key = `${langCode}::${arabicTrimmed}`;
+  const mem = clientTranslationCache.get(key);
+  if (mem) return mem;
+
+  const dictHit = lookupStaticDictionary(arabicTrimmed, langCode);
+  if (dictHit) {
+    clientTranslationCache.set(key, dictHit);
+    return dictHit;
+  }
+  return null;
+}
+
+function isNodeIgnored(node: Node | null): boolean {
+  let el: Element | null = node instanceof Element ? node : node?.parentElement || null;
+  while (el) {
+    if (SKIP_TAGS.has(el.tagName)) return true;
+    const translateAttr = el.getAttribute('translate');
+    if (translateAttr === 'no') return true;
+    if (el.getAttribute('data-no-translate') === 'true') return true;
+    if (el.classList?.contains('notranslate')) return true;
+    el = el.parentElement;
+  }
+  return false;
+}
+
+function collectPendingWork(
+  root: Node,
+  targetLang: string
+): {
+  textNodes: { node: Text; sourceRaw: string; sourceTrimmed: string }[];
+  attrItems: { el: Element; attr: string; sourceTrimmed: string }[];
+  missingTexts: Set<string>;
+} {
+  const textNodes: { node: Text; sourceRaw: string; sourceTrimmed: string }[] = [];
+  const attrItems: { el: Element; attr: string; sourceTrimmed: string }[] = [];
+  const missingTexts = new Set<string>();
+
+  if (!root || isNodeIgnored(root)) {
+    return { textNodes, attrItems, missingTexts };
+  }
+
+  // 1. Walk Text nodes
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      if (isNodeIgnored(node)) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+
+  let current = walker.nextNode() as Text | null;
+  while (current) {
+    const curVal = current.nodeValue || '';
+    const lastWritten = lastWrittenTextMap.get(current);
+
+    // Detect if React updated this text node directly with new Arabic text
+    if (!originalTextsMap.has(current)) {
+      if (ARABIC_CHAR_REGEX.test(curVal)) {
+        originalTextsMap.set(current, curVal);
+        trackedTextNodes.add(current);
+      }
+    } else if (lastWritten !== undefined && curVal !== lastWritten && ARABIC_CHAR_REGEX.test(curVal)) {
+      originalTextsMap.set(current, curVal);
+      appliedLangMap.delete(current);
+    }
+
+    const sourceRaw = originalTextsMap.get(current);
+    if (sourceRaw && appliedLangMap.get(current) !== targetLang) {
+      const sourceTrimmed = sourceRaw.trim();
+      if (sourceTrimmed && ARABIC_CHAR_REGEX.test(sourceTrimmed)) {
+        textNodes.push({ node: current, sourceRaw, sourceTrimmed });
+        if (!getCachedTranslation(sourceTrimmed, targetLang)) {
+          missingTexts.add(sourceTrimmed);
         }
-        return NodeFilter.FILTER_ACCEPT;
       }
     }
-  );
+    current = walker.nextNode() as Text | null;
+  }
 
-  const nodesToUpdate: { node: Node; text: string }[] = [];
-  let currentNode = walker.nextNode();
+  // 2. Walk Elements with translatable attributes (placeholder, title, aria-label)
+  const checkElementAttrs = (el: Element) => {
+    if (isNodeIgnored(el)) return;
+    for (const attr of TRANSLATABLE_ATTRS) {
+      const curAttr = el.getAttribute(attr);
+      if (!curAttr) continue;
 
-  while (currentNode) {
-    const text = currentNode.nodeValue?.trim();
-    if (text) {
-      // Remember original text
-      if (!originalTextsMap.has(currentNode)) {
-        originalTextsMap.set(currentNode, currentNode.nodeValue || '');
+      let origMap = originalAttrsMap.get(el);
+      const lastAttrMap = lastWrittenAttrsMap.get(el);
+      const appliedMap = appliedAttrLangMap.get(el);
+
+      if (!origMap || !(attr in origMap)) {
+        if (ARABIC_CHAR_REGEX.test(curAttr)) {
+          origMap = { ...(origMap || {}), [attr]: curAttr };
+          originalAttrsMap.set(el, origMap);
+          trackedAttrElements.add(el);
+        }
+      } else if (lastAttrMap && lastAttrMap[attr] !== undefined && curAttr !== lastAttrMap[attr] && ARABIC_CHAR_REGEX.test(curAttr)) {
+        origMap[attr] = curAttr;
+        if (appliedMap) delete appliedMap[attr];
       }
 
-      const original = originalTextsMap.get(currentNode) || '';
-      const originalTrimmed = original.trim();
-
-      if (langCode === 'ar') {
-        // Restore pristine Arabic
-        if (currentNode.nodeValue !== original) {
-          nodesToUpdate.push({ node: currentNode, text: original });
+      const sourceTrimmed = origMap?.[attr]?.trim();
+      if (sourceTrimmed && ARABIC_CHAR_REGEX.test(sourceTrimmed) && appliedMap?.[attr] !== targetLang) {
+        attrItems.push({ el, attr, sourceTrimmed });
+        if (!getCachedTranslation(sourceTrimmed, targetLang)) {
+          missingTexts.add(sourceTrimmed);
         }
-      } else {
-        // Check if we have translation for this text
-        const translations = FULL_SITE_PHRASES[originalTrimmed];
-        if (translations) {
-          const translated = translations[langCode] || translations['en'];
-          if (translated) {
-            const nextVal = original.replace(originalTrimmed, translated);
-            nodesToUpdate.push({ node: currentNode, text: nextVal });
+      }
+    }
+  };
+
+  if (root instanceof Element) {
+    checkElementAttrs(root);
+    const elements = root.querySelectorAll('[placeholder],[title],[aria-label]');
+    elements.forEach((el) => checkElementAttrs(el));
+  }
+
+  return { textNodes, attrItems, missingTexts };
+}
+
+function applyCachedTranslations(
+  targetLang: string,
+  textNodes: { node: Text; sourceRaw: string; sourceTrimmed: string }[],
+  attrItems: { el: Element; attr: string; sourceTrimmed: string }[]
+) {
+  for (const item of textNodes) {
+    if (!item.node.isConnected) continue;
+    const translated = getCachedTranslation(item.sourceTrimmed, targetLang);
+    if (translated) {
+      const leading = item.sourceRaw.match(/^\s*/)?.[0] || '';
+      const trailing = item.sourceRaw.match(/\s*$/)?.[0] || '';
+      const nextVal = `${leading}${translated}${trailing}`;
+      if (item.node.nodeValue !== nextVal) {
+        item.node.nodeValue = nextVal;
+      }
+      lastWrittenTextMap.set(item.node, nextVal);
+      appliedLangMap.set(item.node, targetLang);
+    }
+  }
+
+  for (const item of attrItems) {
+    if (!item.el.isConnected) continue;
+    const translated = getCachedTranslation(item.sourceTrimmed, targetLang);
+    if (translated) {
+      item.el.setAttribute(item.attr, translated);
+      const lastMap = lastWrittenAttrsMap.get(item.el) || {};
+      lastMap[item.attr] = translated;
+      lastWrittenAttrsMap.set(item.el, lastMap);
+
+      const appMap = appliedAttrLangMap.get(item.el) || {};
+      appMap[item.attr] = targetLang;
+      appliedAttrLangMap.set(item.el, appMap);
+    }
+  }
+}
+
+export function restoreArabicDom(): void {
+  if (typeof document === 'undefined') return;
+
+  trackedTextNodes.forEach((node) => {
+    if (!node.isConnected) {
+      trackedTextNodes.delete(node);
+      return;
+    }
+    const orig = originalTextsMap.get(node);
+    const lastWritten = lastWrittenTextMap.get(node);
+    if (orig !== undefined && (lastWritten === undefined || node.nodeValue === lastWritten)) {
+      if (node.nodeValue !== orig) {
+        node.nodeValue = orig;
+      }
+    }
+    appliedLangMap.delete(node);
+    lastWrittenTextMap.delete(node);
+  });
+
+  trackedAttrElements.forEach((el) => {
+    if (!el.isConnected) {
+      trackedAttrElements.delete(el);
+      return;
+    }
+    const origMap = originalAttrsMap.get(el);
+    const lastMap = lastWrittenAttrsMap.get(el);
+    if (origMap) {
+      for (const [attr, origVal] of Object.entries(origMap)) {
+        if (!lastMap || el.getAttribute(attr) === lastMap[attr]) {
+          el.setAttribute(attr, origVal);
+        }
+      }
+    }
+    appliedAttrLangMap.delete(el);
+    lastWrittenAttrsMap.delete(el);
+  });
+}
+
+let activeObserver: MutationObserver | null = null;
+let activeAbortController: AbortController | null = null;
+let activeTargetLang = 'ar';
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+export function stopDomTranslator(): void {
+  if (debounceTimer) {
+    clearTimeout(debounceTimer);
+    debounceTimer = null;
+  }
+  if (activeObserver) {
+    activeObserver.disconnect();
+    activeObserver = null;
+  }
+  if (activeAbortController) {
+    activeAbortController.abort();
+    activeAbortController = null;
+  }
+}
+
+export async function translateTextsBatch(
+  texts: string[],
+  targetLang: string,
+  signal?: AbortSignal
+): Promise<Record<string, string>> {
+  if (!texts.length || targetLang === 'ar') return {};
+
+  const resp = await apiFetch('/api/translate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ targetLang, texts }),
+    signal
+  });
+
+  const parsed = await parseJsonSafely(resp);
+  if (!parsed.ok || !parsed.data?.success || !parsed.data?.translations) {
+    return {};
+  }
+  return parsed.data.translations as Record<string, string>;
+}
+
+export function startDomTranslator(
+  langCode: string,
+  onStatusChange?: (translating: boolean) => void
+): void {
+  if (typeof document === 'undefined') return;
+
+  stopDomTranslator();
+  activeTargetLang = langCode;
+
+  if (langCode === 'ar') {
+    restoreArabicDom();
+    onStatusChange?.(false);
+    return;
+  }
+
+  hydrateCacheFromStorage(langCode);
+  const controller = new AbortController();
+  activeAbortController = controller;
+
+  let isApplying = false;
+
+  const runPass = async () => {
+    if (controller.signal.aborted || activeTargetLang !== langCode) return;
+    const rootEl = document.getElementById('root') || document.body;
+
+    isApplying = true;
+    const { textNodes, attrItems, missingTexts } = collectPendingWork(rootEl, langCode);
+    applyCachedTranslations(langCode, textNodes, attrItems);
+    isApplying = false;
+
+    const missingList = Array.from(missingTexts);
+    if (missingList.length === 0) {
+      onStatusChange?.(false);
+      return;
+    }
+
+    onStatusChange?.(true);
+    try {
+      // Request missing translations in clean chunks of 45 items
+      const CHUNK_SIZE = 45;
+      for (let i = 0; i < missingList.length; i += CHUNK_SIZE) {
+        if (controller.signal.aborted || activeTargetLang !== langCode) break;
+        const chunk = missingList.slice(i, i + CHUNK_SIZE);
+        const translatedMap = await translateTextsBatch(chunk, langCode, controller.signal);
+
+        if (controller.signal.aborted || activeTargetLang !== langCode) break;
+
+        Object.entries(translatedMap).forEach(([src, dst]) => {
+          if (typeof dst === 'string' && dst.trim()) {
+            clientTranslationCache.set(`${langCode}::${src}`, dst.trim());
+          }
+        });
+
+        isApplying = true;
+        const freshWork = collectPendingWork(rootEl, langCode);
+        applyCachedTranslations(langCode, freshWork.textNodes, freshWork.attrItems);
+        isApplying = false;
+      }
+
+      if (!controller.signal.aborted && activeTargetLang === langCode) {
+        persistLangCacheToStorage(langCode);
+      }
+    } catch (err: any) {
+      if (err?.name !== 'AbortError') {
+        console.warn('Translation batch error:', err);
+      }
+    } finally {
+      isApplying = false;
+      if (!controller.signal.aborted) {
+        onStatusChange?.(false);
+      }
+    }
+  };
+
+  // Run initial pass right after React commits DOM updates
+  setTimeout(() => {
+    void runPass();
+  }, 40);
+
+  // Watch for React re-renders, newly opened modals, tabs, and dynamic audit content
+  const rootTarget = document.getElementById('root') || document.body;
+  activeObserver = new MutationObserver((mutations) => {
+    if (isApplying || controller.signal.aborted || activeTargetLang !== langCode) return;
+
+    let hasPotentialArabicWork = false;
+    for (const m of mutations) {
+      if (m.type === 'characterData') {
+        const val = m.target.nodeValue || '';
+        const last = lastWrittenTextMap.get(m.target as Text);
+        if (val !== last && ARABIC_CHAR_REGEX.test(val)) {
+          hasPotentialArabicWork = true;
+          break;
+        }
+      } else if (m.type === 'childList' && m.addedNodes.length > 0) {
+        for (let i = 0; i < m.addedNodes.length; i++) {
+          const added = m.addedNodes[i];
+          if (!isNodeIgnored(added) && ARABIC_CHAR_REGEX.test(added.textContent || '')) {
+            hasPotentialArabicWork = true;
+            break;
+          }
+        }
+        if (hasPotentialArabicWork) break;
+      } else if (m.type === 'attributes') {
+        const el = m.target as Element;
+        const attrName = m.attributeName || '';
+        if (attrName && (TRANSLATABLE_ATTRS as readonly string[]).includes(attrName)) {
+          const cur = el.getAttribute(attrName) || '';
+          const last = lastWrittenAttrsMap.get(el)?.[attrName];
+          if (cur !== last && ARABIC_CHAR_REGEX.test(cur)) {
+            hasPotentialArabicWork = true;
+            break;
           }
         }
       }
     }
-    currentNode = walker.nextNode();
-  }
 
-  // Apply updates
-  for (const item of nodesToUpdate) {
-    item.node.nodeValue = item.text;
-  }
+    if (hasPotentialArabicWork) {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        void runPass();
+      }, 60);
+    }
+  });
+
+  activeObserver.observe(rootTarget, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+    attributes: true,
+    attributeFilter: ['placeholder', 'title', 'aria-label']
+  });
+}
+
+// Keep backward-compatible helper exports if referenced externally
+export function triggerGoogleTranslate(_langCode: string): void {
+  // Legacy no-op: handled natively by React-safe startDomTranslator
+}
+
+export function translateDomTextNodes(langCode: string): void {
+  startDomTranslator(langCode);
 }

@@ -1,13 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { WORLD_LANGUAGES, LanguageItem } from '../data/languages';
 import { TranslationKey, getLocalizedText } from '../data/translations';
-import { triggerGoogleTranslate, translateDomTextNodes } from '../utils/domTranslator';
+import { startDomTranslator, stopDomTranslator } from '../utils/domTranslator';
 
 interface LanguageContextType {
   currentLanguage: LanguageItem;
   setLanguage: (code: string) => void;
   t: (key: TranslationKey, fallback?: string) => string;
   isRtl: boolean;
+  isTranslating: boolean;
   availableLanguages: LanguageItem[];
 }
 
@@ -23,19 +24,19 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return 'ar';
     }
   });
+  const [isTranslating, setIsTranslating] = useState(false);
 
   const currentLanguage =
     WORLD_LANGUAGES.find((l) => l.code === selectedCode) || WORLD_LANGUAGES[0];
 
   const isRtl = currentLanguage.dir === 'rtl';
 
-  // Synchronize document dir, lang, and classes whenever language changes
+  // Synchronize document dir, lang, classes, and React-safe DOM translator
   useEffect(() => {
     try {
       document.documentElement.dir = currentLanguage.dir;
       document.documentElement.lang = currentLanguage.code;
-      
-      // Update body or root font or direction hints
+
       if (currentLanguage.dir === 'ltr') {
         document.body.classList.add('app-ltr');
         document.body.classList.remove('app-rtl');
@@ -46,16 +47,15 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       localStorage.setItem(STORAGE_KEY, currentLanguage.code);
 
-      // Trigger full website translation via Google Translate
-      triggerGoogleTranslate(currentLanguage.code);
-
-      // Also trigger client-side DOM text node translation
-      setTimeout(() => {
-        translateDomTextNodes(currentLanguage.code);
-      }, 60);
+      startDomTranslator(currentLanguage.code, setIsTranslating);
     } catch (e) {
       console.warn('Failed to update language settings in DOM', e);
+      setIsTranslating(false);
     }
+
+    return () => {
+      stopDomTranslator();
+    };
   }, [currentLanguage]);
 
   const setLanguage = useCallback((code: string) => {
@@ -79,6 +79,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setLanguage,
         t,
         isRtl,
+        isTranslating,
         availableLanguages: WORLD_LANGUAGES
       }}
     >
