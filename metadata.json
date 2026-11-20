@@ -1,0 +1,6 @@
+{
+  "name": "RasidSEO - فاحص أخطاء وسيو المواقع والمدونات",
+  "description": "منصة احترافية شاملة لفحص وتدقيق أخطاء المواقع والمدونات، وتحليل السيو التقني، وفحص علامات الميتا، وهيكل العناوين، وسرعة الصفحة، والأمان مع توصيات إصلاح ذكية.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
