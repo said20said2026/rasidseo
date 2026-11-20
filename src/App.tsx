@@ -75,9 +75,7 @@ import { useLanguage } from './context/LanguageContext';
 import { apiFetch, parseJsonSafely } from './utils/apiConfig';
 
 // Assets
-const heroBanner = '/src/assets/images/hero_audit_preview_1791822043693.jpg';
-const techImg = '/src/assets/images/audit_feature_technical_1791822054303.jpg';
-const contentImg = '/src/assets/images/audit_feature_content_1791822064933.jpg';
+const heroBanner = '/dashboard-preview.jpg';
 
 interface RecentAuditUrl {
   url: string;
@@ -868,7 +866,11 @@ export default function App() {
               <div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-xl bg-slate-900">
                 <img
                   src={heroBanner}
-                  alt="لوحة فحص أخطاء المواقع راصد سيو"
+                  alt="لوحة فحص وتحليل السيو التقني للمواقع والمدونات"
+                  width={800}
+                  height={450}
+                  loading="eager"
+                  decoding="async"
                   referrerPolicy="no-referrer"
                   className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-700"
                   onError={(e) => {

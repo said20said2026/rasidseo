@@ -308,7 +308,7 @@ export const SeoMasteryContentSection: React.FC = () => {
                   </button>
                 </div>
                 <code className="block font-mono text-[11px] text-emerald-400 select-all overflow-x-auto">
-                  {'<img src="dashboard.webp" alt="لوحة فحص السيو للمواقع" width="800" height="450" loading="lazy">'}
+                  {'<img src="dashboard.webp" alt="لوحة فحص وتحليل السيو التقني للمواقع والمدونات" width="800" height="450" loading="lazy">'}
                 </code>
               </div>
             </section>
