@@ -1,9 +1,9 @@
-import { AuditResult } from '../types/seo';
-import { calculateCoreWebVitals } from '../utils/cwvCalculator';
-import { analyzeInternalLinking } from '../utils/internalLinkingAnalyzer';
-import { analyzeSecurityHeaders } from '../utils/securityHeadersAnalyzer';
-import { generateHighIntentKeywords } from '../utils/highIntentKeywordsAnalyzer';
-import { generateSeoRoadmapPlan } from '../utils/roadmapGenerator';
+import { AuditResult } from '../types/seo.js';
+import { calculateCoreWebVitals } from '../utils/cwvCalculator.js';
+import { analyzeInternalLinking } from '../utils/internalLinkingAnalyzer.js';
+import { analyzeSecurityHeaders } from '../utils/securityHeadersAnalyzer.js';
+import { generateHighIntentKeywords } from '../utils/highIntentKeywordsAnalyzer.js';
+import { generateSeoRoadmapPlan } from '../utils/roadmapGenerator.js';
 
 export const SAMPLE_AUDITS: Record<string, AuditResult> = {
   blog: {

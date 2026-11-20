@@ -2,7 +2,7 @@ import {
   HighIntentKeywordsAnalysis,
   HighIntentKeywordItem,
   SearchIntentType
-} from '../types/seo';
+} from '../types/seo.js';
 
 interface ContentInput {
   url: string;

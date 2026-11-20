@@ -1,4 +1,4 @@
-import { CoreWebVitalsAnalysis, CoreWebVitalsMetric, CWVStatus } from '../types/seo';
+import { CoreWebVitalsAnalysis, CoreWebVitalsMetric, CWVStatus } from '../types/seo.js';
 
 interface CWVInputData {
   loadTimeMs: number;

@@ -16,8 +16,10 @@ import { generateSeoRoadmapPlan } from './src/utils/roadmapGenerator.js';
 
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirnameResolved =
+  typeof import.meta !== 'undefined' && import.meta.url
+    ? path.dirname(fileURLToPath(import.meta.url))
+    : process.cwd();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -2297,16 +2299,17 @@ ${JSON.stringify(itemsBrief, null, 2)}
 // Setup Vite or Static File Serving
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
-    const { createServer } = await import('vite');
+    const vitePkg = 'vite';
+    const { createServer } = await import(/* @vite-ignore */ vitePkg);
     const vite = await createServer({
       server: { middlewareMode: true },
       appType: 'spa',
     });
     app.use(vite.middlewares);
   } else {
-    app.use(express.static(path.resolve(__dirname, 'dist')));
+    app.use(express.static(path.resolve(__dirnameResolved, 'dist')));
     app.get('*', (_req: Request, res: Response) => {
-      res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
+      res.sendFile(path.resolve(__dirnameResolved, 'dist', 'index.html'));
     });
   }
 

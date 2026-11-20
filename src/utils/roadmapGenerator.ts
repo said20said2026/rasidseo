@@ -6,7 +6,7 @@ import {
   RoadmapTaskPriority,
   RoadmapTaskDifficulty,
   SeoRoadmapPlan
-} from '../types/seo';
+} from '../types/seo.js';
 
 interface GenerateRoadmapParams {
   url: string;

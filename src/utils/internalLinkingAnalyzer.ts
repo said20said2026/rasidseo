@@ -3,7 +3,7 @@ import {
   InternalLinkItem,
   InternalLinkingCluster,
   InternalLinkingSuggestion
-} from '../types/seo';
+} from '../types/seo.js';
 
 const GENERIC_ANCHORS = new Set([
   'اضغط هنا',

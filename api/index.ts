@@ -1,3 +1,8 @@
-import app from '../server.js';
+import type { Request, Response } from 'express';
+import appModule from '../server.js';
 
-export default app;
+const app = (appModule as any)?.default || appModule;
+
+export default function handler(req: Request, res: Response) {
+  return app(req, res);
+}

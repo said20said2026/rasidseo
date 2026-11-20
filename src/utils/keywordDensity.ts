@@ -1,4 +1,4 @@
-import { KeywordDensityAnalysis, KeywordItem } from '../types/seo';
+import { KeywordDensityAnalysis, KeywordItem } from '../types/seo.js';
 
 // Common Arabic stop words to ignore when extracting keywords
 const ARABIC_STOPWORDS = new Set([

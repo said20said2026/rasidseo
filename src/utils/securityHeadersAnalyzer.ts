@@ -2,7 +2,7 @@ import {
   SecurityHeadersAnalysis,
   CSPDirectiveItem,
   CSPRecommendationItem
-} from '../types/seo';
+} from '../types/seo.js';
 
 export interface RawHeadersInput {
   hsts?: string;

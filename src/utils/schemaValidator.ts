@@ -1,4 +1,4 @@
-import { DetectedSchemaItem, SchemaAnalysis, SchemaIssue } from '../types/seo';
+import { DetectedSchemaItem, SchemaAnalysis, SchemaIssue } from '../types/seo.js';
 
 // Arabic human-friendly mapping of schema types & their rich snippet potential
 export const SCHEMA_TYPE_INFO: Record<string, { labelAr: string; richResultTypeAr: string; descriptionAr: string }> = {
