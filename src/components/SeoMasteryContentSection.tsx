@@ -245,7 +245,7 @@ export const SeoMasteryContentSection: React.FC = () => {
                     <span>{copiedSnippet === 'perf-code' ? 'تم النسخ' : 'نسخ'}</span>
                   </button>
                 </div>
-                <code className="block font-mono text-[11px] text-emerald-400 select-all overflow-x-auto">
+                <code className="block font-mono text-[11px] text-emerald-400 select-all overflow-x-auto whitespace-pre">
                   {'<link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="dns-prefetch" href="https://cdn.example.com">'}
                 </code>
               </div>
