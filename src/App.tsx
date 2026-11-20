@@ -72,6 +72,7 @@ import { SubNavbar } from './components/SubNavbar';
 import { FaqSection } from './components/FaqSection';
 import { SeoMasteryContentSection } from './components/SeoMasteryContentSection';
 import { useLanguage } from './context/LanguageContext';
+import { apiFetch, parseJsonSafely } from './utils/apiConfig';
 
 // Assets
 const heroBanner = '/src/assets/images/hero_audit_preview_1791822043693.jpg';
@@ -384,15 +385,25 @@ export default function App() {
     }, 200);
 
     try {
-      const resp = await fetch('/api/audit', {
+      const resp = await apiFetch('/api/audit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: target, enableAi, turboMode, forceRefresh })
       });
 
-      const data = await resp.json();
+      const parsed = await parseJsonSafely(resp);
       clearInterval(stepInterval);
 
+      if (parsed.isHtmlOrTextError || !parsed.data) {
+        setErrorMsg(
+          parsed.status === 404
+            ? 'نقطة الفحص (/api/audit) غير مفعّلة على الخادم الحالي. تأكد من رفع ملفات الخادم (api/index.ts و vercel.json) أو ضبط عنوان الخادم.'
+            : `استجاب خادم الفحص برمز خطأ (${parsed.status}). يرجى المحاولة مرة أخرى.`
+        );
+        return;
+      }
+
+      const data = parsed.data;
       if (data.success && data.data) {
         setAuditData(data.data);
         setUrlInput(data.data.url);

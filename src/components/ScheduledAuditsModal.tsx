@@ -36,6 +36,7 @@ import {
   getFrequencyLabelAr,
   subscriptionToCalendarConfig
 } from '../utils/scheduledAuditCalendar';
+import { apiFetch, apiUrl } from '../utils/apiConfig';
 
 interface Props {
   isOpen: boolean;
@@ -100,7 +101,7 @@ export const ScheduledAuditsModal: React.FC<Props> = ({
   }, [currentCalendarConfig]);
 
   const directIcsDownloadUrl = useMemo(() => {
-    return `/api/scheduled-audits/export-ics?url=${encodeURIComponent(url)}&siteName=${encodeURIComponent(siteName || '')}&frequency=${frequency}&dayOfWeek=${dayOfWeek}&timeOfDay=${encodeURIComponent(timeOfDay)}`;
+    return apiUrl(`/api/scheduled-audits/export-ics?url=${encodeURIComponent(url)}&siteName=${encodeURIComponent(siteName || '')}&frequency=${frequency}&dayOfWeek=${dayOfWeek}&timeOfDay=${encodeURIComponent(timeOfDay)}`);
   }, [url, siteName, frequency, dayOfWeek, timeOfDay]);
 
   // Sync currentUrl and siteName
@@ -119,7 +120,7 @@ export const ScheduledAuditsModal: React.FC<Props> = ({
   const fetchSubscriptions = async () => {
     setIsLoadingSubs(true);
     try {
-      const resp = await fetch('/api/scheduled-audits');
+      const resp = await apiFetch('/api/scheduled-audits');
       if (resp.ok) {
         const data = await resp.json();
         if (data.subscriptions) {
@@ -173,7 +174,7 @@ export const ScheduledAuditsModal: React.FC<Props> = ({
         includeAiRecommendations
       };
 
-      const resp = await fetch('/api/scheduled-audits', {
+      const resp = await apiFetch('/api/scheduled-audits', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -207,7 +208,7 @@ export const ScheduledAuditsModal: React.FC<Props> = ({
     setIsSendingTest(true);
     setStatusMessage(null);
     try {
-      const resp = await fetch('/api/scheduled-audits/test-send', {
+      const resp = await apiFetch('/api/scheduled-audits/test-send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -238,7 +239,7 @@ export const ScheduledAuditsModal: React.FC<Props> = ({
   // Toggle Subscription Status
   const handleToggleSub = async (id: string) => {
     try {
-      const resp = await fetch(`/api/scheduled-audits/${id}/toggle`, { method: 'PATCH' });
+      const resp = await apiFetch(`/api/scheduled-audits/${id}/toggle`, { method: 'PATCH' });
       if (resp.ok) {
         fetchSubscriptions();
       }
@@ -250,7 +251,7 @@ export const ScheduledAuditsModal: React.FC<Props> = ({
   // Delete Subscription
   const handleDeleteSub = async (id: string) => {
     try {
-      const resp = await fetch(`/api/scheduled-audits/${id}`, { method: 'DELETE' });
+      const resp = await apiFetch(`/api/scheduled-audits/${id}`, { method: 'DELETE' });
       if (resp.ok) {
         fetchSubscriptions();
         setStatusMessage({ type: 'success', text: 'تم إلغاء الاشتراك المجدول بنجاح.' });

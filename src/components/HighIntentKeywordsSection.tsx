@@ -33,6 +33,7 @@ import {
   HighIntentKeywordItem,
   SearchIntentType
 } from '../types/seo';
+import { apiFetch } from '../utils/apiConfig';
 
 interface Props {
   auditData: AuditResult;
@@ -101,7 +102,7 @@ export const HighIntentKeywordsSection: React.FC<Props> = ({ auditData }) => {
     if (e) e.preventDefault();
     setIsRegenerating(true);
     try {
-      const resp = await fetch('/api/ai/high-intent-keywords', {
+      const resp = await apiFetch('/api/ai/high-intent-keywords', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

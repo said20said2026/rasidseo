@@ -24,6 +24,7 @@ import {
   Brain
 } from 'lucide-react';
 import { AuditItem } from '../types/seo';
+import { apiFetch } from '../utils/apiConfig';
 import {
   getAiTipForAuditItem,
   getSmartTipForAuditItem,
@@ -158,7 +159,7 @@ export const AuditItemCard: React.FC<AuditItemCardProps> = ({
     e.stopPropagation();
     setIsLoadingDeepAi(true);
     try {
-      const resp = await fetch('/api/ai-item-tip', {
+      const resp = await apiFetch('/api/ai-item-tip', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

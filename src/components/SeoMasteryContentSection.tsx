@@ -60,7 +60,7 @@ export const SeoMasteryContentSection: React.FC = () => {
       "name": "راصد سيو - RasidSEO",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://rasid-seo.web.app/logo.png"
+        "url": "https://www.rasidseo.site/logo.png"
       }
     },
     "datePublished": "2026-01-01",

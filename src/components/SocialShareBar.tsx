@@ -12,7 +12,7 @@ export const SocialShareBar: React.FC<SocialShareBarProps> = ({
 }) => {
   const [copiedType, setCopiedType] = useState<string | null>(null);
 
-  const shareUrl = url || (typeof window !== 'undefined' ? window.location.href : 'https://rasidseo.com');
+  const shareUrl = url || (typeof window !== 'undefined' ? window.location.href : 'https://www.rasidseo.site');
   const encodedUrl = encodeURIComponent(shareUrl);
   const encodedTitle = encodeURIComponent(`${title} - افحص موقعك واكتشف أخطاء السيو مجاناً:`);
 

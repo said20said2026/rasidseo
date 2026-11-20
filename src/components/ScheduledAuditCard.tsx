@@ -23,6 +23,7 @@ import {
   downloadScheduledAuditIcs,
   formatNextAuditDisplay
 } from '../utils/scheduledAuditCalendar';
+import { apiFetch, apiUrl } from '../utils/apiConfig';
 
 interface Props {
   currentUrl: string;
@@ -54,7 +55,7 @@ export const ScheduledAuditCard: React.FC<Props> = ({
 
   const nextSchedule = formatNextAuditDisplay(frequency, 1, '09:00');
   const googleCalendarUrl = generateGoogleCalendarUrl(calendarConfig);
-  const directIcsDownloadUrl = `/api/scheduled-audits/export-ics?url=${encodeURIComponent(currentUrl)}&siteName=${encodeURIComponent(auditData?.pageTitle || '')}&frequency=${frequency}&dayOfWeek=1&timeOfDay=09:00`;
+  const directIcsDownloadUrl = apiUrl(`/api/scheduled-audits/export-ics?url=${encodeURIComponent(currentUrl)}&siteName=${encodeURIComponent(auditData?.pageTitle || '')}&frequency=${frequency}&dayOfWeek=1&timeOfDay=09:00`);
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,7 +67,7 @@ export const ScheduledAuditCard: React.FC<Props> = ({
     setIsSubmitting(true);
     setFeedback(null);
     try {
-      const resp = await fetch('/api/scheduled-audits', {
+      const resp = await apiFetch('/api/scheduled-audits', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -109,7 +110,7 @@ export const ScheduledAuditCard: React.FC<Props> = ({
     setIsSendingTest(true);
     setFeedback(null);
     try {
-      const resp = await fetch('/api/scheduled-audits/test-send', {
+      const resp = await apiFetch('/api/scheduled-audits/test-send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

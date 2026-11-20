@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { AuditItem } from '../types/seo';
 import { getAiTipForAuditItem, AiCriterionTip, CodeSnippetSolution } from '../utils/aiItemTips';
+import { apiFetch } from '../utils/apiConfig';
 
 interface ChecklistAiTipButtonProps {
   item: AuditItem;
@@ -81,7 +82,7 @@ export const ChecklistAiTipButton: React.FC<ChecklistAiTipButtonProps> = ({
     e.stopPropagation();
     setIsLoadingDeepAi(true);
     try {
-      const resp = await fetch('/api/ai-item-tip', {
+      const resp = await apiFetch('/api/ai-item-tip', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

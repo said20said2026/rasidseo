@@ -22,6 +22,46 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// CORS configuration binding the audit backend to https://www.rasidseo.site and preview origins
+const ALLOWED_ORIGINS = new Set([
+  'https://www.rasidseo.site',
+  'https://rasidseo.site',
+  'http://www.rasidseo.site',
+  'http://rasidseo.site',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  ...(process.env.APP_URL ? [process.env.APP_URL.replace(/\/+$/, '')] : []),
+  ...(process.env.ALLOWED_ORIGIN ? process.env.ALLOWED_ORIGIN.split(',').map((o) => o.trim().replace(/\/+$/, '')) : [])
+]);
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin) {
+    const cleanOrigin = origin.replace(/\/+$/, '');
+    const isAllowed =
+      ALLOWED_ORIGINS.has(cleanOrigin) ||
+      cleanOrigin.endsWith('.rasidseo.site') ||
+      cleanOrigin.endsWith('.vercel.app') ||
+      cleanOrigin.endsWith('.run.app');
+
+    if (isAllowed) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Vary', 'Origin');
+    }
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', 'https://www.rasidseo.site');
+  }
+
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+  next();
+});
+
 app.use(express.json());
 
 // Initialize Google GenAI with recommended telemetry header
@@ -69,7 +109,7 @@ async function probePath(baseUrl: string, subpath: string, timeoutMs = 1400): Pr
       method: 'HEAD',
       signal: controller.signal,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; RasidSEOBot/1.0; +https://rasidseo.com)'
+        'User-Agent': 'Mozilla/5.0 (compatible; RasidSEOBot/1.0; +https://www.rasidseo.site)'
       }
     });
     clearTimeout(timeout);
@@ -159,6 +199,17 @@ async function checkExternalLink(link: LinkToTest, timeoutMs = 1200): Promise<Ex
     };
   }
 }
+
+// API: Health Check
+app.get('/api/health', (_req: Request, res: Response) => {
+  res.json({
+    success: true,
+    status: 'ok',
+    service: 'RasidSEO Audit Server',
+    domain: 'https://www.rasidseo.site',
+    timestamp: new Date().toISOString()
+  });
+});
 
 // API: Get Samples
 app.get('/api/samples', (_req: Request, res: Response) => {
@@ -2264,4 +2315,9 @@ async function startServer() {
   });
 }
 
-startServer();
+if (!process.env.VERCEL && !process.env.SERVERLESS) {
+  startServer();
+}
+
+export { app };
+export default app;

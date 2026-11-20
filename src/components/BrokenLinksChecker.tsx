@@ -30,6 +30,7 @@ import {
   HelpCircle
 } from 'lucide-react';
 import { BrokenLinksAnalysis, ExternalLinkCheckResult } from '../types/seo';
+import { apiFetch } from '../utils/apiConfig';
 
 interface BrokenLinksCheckerProps {
   analysis?: BrokenLinksAnalysis;
@@ -135,7 +136,7 @@ export const BrokenLinksChecker: React.FC<BrokenLinksCheckerProps> = ({
   const handleRetestLink = async (index: number, linkItem: ExternalLinkCheckResult) => {
     setTestingLinkIdx(index);
     try {
-      const resp = await fetch('/api/check-broken-links', {
+      const resp = await apiFetch('/api/check-broken-links', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -171,7 +172,7 @@ export const BrokenLinksChecker: React.FC<BrokenLinksCheckerProps> = ({
     if (links.length === 0) return;
     setIsRecheckingAll(true);
     try {
-      const resp = await fetch('/api/check-broken-links', {
+      const resp = await apiFetch('/api/check-broken-links', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -212,7 +213,7 @@ export const BrokenLinksChecker: React.FC<BrokenLinksCheckerProps> = ({
     setCustomError(null);
     setIsTestingCustom(true);
     try {
-      const resp = await fetch('/api/check-broken-links', {
+      const resp = await apiFetch('/api/check-broken-links', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -1,5 +1,6 @@
 import { AuditItem } from '../types/seo';
 import { CustomCategory, CustomCategoryType } from './customCategoriesStorage';
+import { apiFetch } from './apiConfig';
 
 export interface AutoCategorizeSuggestion {
   id: string;
@@ -216,7 +217,7 @@ export async function requestAiAutoCategorize(
       url: siteUrl
     };
 
-    const response = await fetch('/api/ai-auto-categorize', {
+    const response = await apiFetch('/api/ai-auto-categorize', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
