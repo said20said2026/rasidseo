@@ -743,7 +743,7 @@ export default function App() {
               </h1>
 
               <p className="mt-4 text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
-                {t('hero.desc', 'أداة متكاملة لتحليل السيو الداخلي (On-Page SEO)، والسرعة، وهيكل العناوين H1-H6، ووسوم الميتا، وفحص ملفات الروبوتات وخريطة الموقع مع توليد فوري للأكواد واستشارة ذكاء اصطناعي ذكية.')}
+                {t('hero.desc', 'اكتشف أفضل خدمات rasidseo.site مع دليل شامل ومراجعات مفصلة باللغة العربية لتحليل السيو الداخلي والسرعة، وتطبيق نصائح تحسين محركات البحث وتجربة المستخدم وتوليد الأكواد الفوري.')}
               </p>
 
               {/* URL Input Form */}
@@ -972,8 +972,8 @@ export default function App() {
                 </picture>
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-5">
                   <div className="text-white">
-                    <p className="text-xs font-mono text-indigo-300">الرصد الفوري والتقارير الاحترافية</p>
-                    <p className="text-sm font-bold mt-0.5">تحليل شامل يعادل أدوات السيو العالمية</p>
+                    <p className="text-xs font-mono text-indigo-300">أفضل خدمات rasidseo.site • الرصد الفوري</p>
+                    <p className="text-sm font-bold mt-0.5">دليل شامل ومراجعات مفصلة باللغة العربية ونصائح تحسين محركات البحث وتجربة المستخدم</p>
                   </div>
                 </div>
               </div>
@@ -2252,7 +2252,7 @@ export default function App() {
                 <span className="text-xs font-mono text-indigo-400">RasidSEO</span>
               </div>
               <p className="text-xs text-slate-500 mt-1 max-w-md">
-                المنصة المتكاملة لفحص وتدقيق أخطاء المواقع والمدونات، تحليل السيو التقني، وتوليد الأكواد الجاهزة.
+                اكتشف أفضل خدمات rasidseo.site مع دليل شامل ومراجعات مفصلة باللغة العربية لفحص المواقع، وتطبيق نصائح تحسين محركات البحث وتجربة المستخدم.
               </p>
             </div>
 

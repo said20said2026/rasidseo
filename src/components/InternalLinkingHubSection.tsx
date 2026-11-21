@@ -66,7 +66,7 @@ export const InternalLinkingHubSection: React.FC = () => {
             استكشف مقالات السيو المتخصصة والصفحات العميقة في راصد سيو
           </h2>
           <p className="mt-2.5 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-            شبكة روابط داخلية منظمة وفق بنية المجموعات العنقودية (Hub &amp; Spoke) لتسهيل وصول الزوار وعناكب البحث إلى أدلة السيو العميقة وأدوات الفحص التقني.
+            استكشف أفضل خدمات rasidseo.site عبر شبكة روابط منظمة تمنحك دليل شامل ومراجعات مفصلة باللغة العربية، مع تطبيق عملي لأهم نصائح تحسين محركات البحث وتجربة المستخدم.
           </p>
         </header>
 
@@ -80,7 +80,7 @@ export const InternalLinkingHubSection: React.FC = () => {
               <h3 className="text-sm font-black text-slate-900 dark:text-white">المقالات والأدلة العميقة</h3>
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
-              أدلة تفصيلية تغطي <a href="/articles/technical-seo-checklist-2026" onClick={(e) => handleLinkClick(e, '/articles/technical-seo-checklist-2026')} className="text-indigo-600 dark:text-indigo-400 font-semibold underline">قائمة فحص السيو التقني 2026</a> وأسرار تحسين الترتيب.
+              تصفح <a href="/articles/technical-seo-checklist-2026" onClick={(e) => handleLinkClick(e, '/articles/technical-seo-checklist-2026')} className="text-indigo-600 dark:text-indigo-400 font-semibold underline">دليل شامل ومراجعات مفصلة باللغة العربية لفحص السيو 2026</a> وأسرار تصدر البحث.
             </p>
             <ul className="space-y-2.5 mt-auto">
               {articleLinks.map((art) => (
@@ -134,7 +134,7 @@ export const InternalLinkingHubSection: React.FC = () => {
               <h3 className="text-sm font-black text-slate-900 dark:text-white">الأدوات والحلول المتقدمة</h3>
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
-              انتقل مباشرة إلى <a href="/features/seo-code-generator" onClick={(e) => handleLinkClick(e, '/features/seo-code-generator')} className="text-amber-600 dark:text-amber-400 font-semibold underline">مولد أكواد السيو والميتا</a> وأدوات الفحص التفاعلية.
+              استخدم <a href="/features/seo-code-generator" onClick={(e) => handleLinkClick(e, '/features/seo-code-generator')} className="text-amber-600 dark:text-amber-400 font-semibold underline">أفضل خدمات rasidseo.site في توليد أكواد الميتا</a> وأدوات الفحص والتوافق المباشر.
             </p>
             <ul className="space-y-3 mt-auto">
               {toolLinks.map((tool) => (
