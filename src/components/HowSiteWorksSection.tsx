@@ -63,7 +63,7 @@ export const HowSiteWorksSection: React.FC = () => {
               <span>1. الاتصال المباشر بالخادم ومحاكاة زحف جوجل في ثوانٍ</span>
             </h3>
             <p>
-              يعتمد موقع <strong>راصد سيو (RasidSEO)</strong> على محرك تدقيق سيو تقني متطور يعمل فور إدخالك رابط الموقع أو المدونة والضغط على زر الفحص الفوري. في اللحظة الأولى، يتواصل الخادم مباشرة مع موقعك باستخدام بروتوكول جلب متزامن عالي السرعة لقياس زمن استجابة الخادم الأولي (TTFB)، والتحقق من رمز الحالة (HTTP Status Code)، وفحص صلاحية شهادة التشفير والأمان HTTPS. وبالتوازي مع قراءة الشفرة المصدرية لصفحة HTML، يختبر النظام آلياً وجود ملف التعليمات <strong>Robots.txt</strong> وخريطة الموقع <strong>Sitemap.xml</strong> للتأكد من أن عناكب محركات البحث قادرة على الوصول إلى جميع صفحاتك وفهرستها دون عوائق.
+              يعتمد موقع <strong>راصد سيو (rasidseo)</strong> على خدمة فحص سيو المواقع والتقارير الفورية عبر محرك تدقيق تقني متطور يعمل فور إدخالك رابط الموقع أو المدونة والضغط على زر الفحص. في اللحظة الأولى، يتواصل الخادم مباشرة مع موقعك باستخدام بروتوكول جلب متزامن عالي السرعة لقياس زمن استجابة الخادم الأولي (TTFB)، والتحقق من رمز الحالة (HTTP Status Code)، وفحص صلاحية شهادة التشفير والأمان HTTPS. وبالتوازي مع قراءة الشفرة المصدرية لصفحة HTML، يختبر النظام آلياً وجود ملف التعليمات <strong>Robots.txt</strong> وخريطة الموقع <strong>Sitemap.xml</strong> للتأكد من أن عناكب محركات البحث قادرة على الوصول إلى جميع صفحاتك وفهرستها دون عوائق.
             </p>
           </section>
 
@@ -96,7 +96,7 @@ export const HowSiteWorksSection: React.FC = () => {
               <span>4. التلميحات الذكية، مولد الأكواد الجاهزة، وخطة العمل المتكاملة</span>
             </h3>
             <p>
-              تتمثل القوة الحقيقية في <a href="/articles/technical-seo-checklist-2026" onClick={(e) => handleDeepLinkClick(e, '/articles/technical-seo-checklist-2026')} className="text-indigo-600 dark:text-indigo-400 font-semibold underline decoration-indigo-300 hover:decoration-indigo-600">الدليل الشامل لفحص السيو التقني 2026</a> في تحويل كل خطأ مكتشف إلى حل تقني مباشر قابل للتنفيذ. كما يتيح لك <a href="/features/seo-code-generator" onClick={(e) => handleDeepLinkClick(e, '/features/seo-code-generator')} className="text-indigo-600 dark:text-indigo-400 font-semibold underline decoration-indigo-300 hover:decoration-indigo-600">مولد أكواد السيو والميتا والـ Schema</a> إنشاء الوسوم وملفات Robots.txt بضغطة زر.
+              تتمثل القوة الحقيقية في <a href="/articles/technical-seo-checklist-2026" onClick={(e) => handleDeepLinkClick(e, '/articles/technical-seo-checklist-2026')} className="text-indigo-600 dark:text-indigo-400 font-semibold underline decoration-indigo-300 hover:decoration-indigo-600">الدليل الشامل لفحص السيو التقني 2026</a> في تحويل ما يرصده من أخطاء تقنية أو برمجية إلى حلول مباشرة قابلة للتنفيذ، مما يبسط كيفية تصدر نتائج البحث في جوجل خطوة بخطوة للمبتدئين. كما يتيح لك <a href="/features/seo-code-generator" onClick={(e) => handleDeepLinkClick(e, '/features/seo-code-generator')} className="text-indigo-600 dark:text-indigo-400 font-semibold underline decoration-indigo-300 hover:decoration-indigo-600">مولد أكواد السيو والميتا والـ Schema</a> إنشاء الوسوم وملفات Robots.txt بضغطة زر.
             </p>
             <p>
               ولضمان استمرارية تصدرك لنتائج البحث، يمنحك الموقع قائمة مهام تفاعلية قابلة للتصفية والتصدير بصيغ PDF و JSON و CSV، مع إمكانية جدولة الفحص الدوري لتلقي تنبيهات فورية عند أي تراجع في النتيجة أو الأداء. سواء كنت مدوناً أو صاحب متجر إلكتروني أو مطور ويب، ستجد في <a href="/faq" onClick={(e) => handleDeepLinkClick(e, '/faq')} className="text-indigo-600 dark:text-indigo-400 font-semibold underline decoration-indigo-300 hover:decoration-indigo-600">الأسئلة الشائعة حول فحص المواقع في راصد سيو</a> دليلك اليومي لضمان موقع سريع وآمن.
@@ -109,7 +109,7 @@ export const HowSiteWorksSection: React.FC = () => {
               <span>5. مقارنة النتائج التاريخية وتحسين تجربة القارئ العربي</span>
             </h3>
             <p>
-              مع كل فحص جديد تجريه، يحفظ راصد سيو سجل النتيجة الزمني لتتمكن من مقارنة تطور أداء موقعك قبل الإصلاح وبعده عبر رسوم بيانية واضحة، وقياس أثر كل تعديل تقني على النتيجة الإجمالية. كما تمنحك المنصة دليل شامل ومراجعات مفصلة باللغة العربية تراعي خصوصية الاتجاه من اليمين إلى اليسار (RTL)، وتقدم أهم نصائح تحسين محركات البحث وتجربة المستخدم على الأجهزة المحمولة للاستفادة من أفضل خدمات rasidseo.site ومضاعفة الزيارات المجانية المستهدفة بشكل مستدام وطويل الأمد.
+              مع كل فحص جديد تجريه، يحفظ راصد سيو سجل النتيجة الزمني لتتمكن من مقارنة تطور أداء موقعك قبل الإصلاح وبعده عبر رسوم بيانية واضحة، وقياس أثر كل تعديل تقني على النتيجة الإجمالية. كما تمنحك المنصة دليل شامل ومراجعات مفصلة باللغة العربية تراعي خصوصية الاتجاه من اليمين إلى اليسار (RTL)، وتقدم أهم نصائح تحسين محركات البحث وتجربة المستخدم على الأجهزة المحمولة، لتكمل بها استراتيجيات بناء الروابط الخلفية Backlinks ذات الجودة العالية وتستفيد من أفضل خدمات rasidseo.site لمضاعفة الزيارات المجانية المستهدفة بشكل مستدام وطويل الأمد.
             </p>
           </section>
 
