@@ -178,6 +178,19 @@ export const SubNavbar: React.FC<SubNavbarProps> = ({
                 </button>
               );
             })}
+
+            <a
+              href="https://www.facebook.com/profile.php?id=61596690785315"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="تابع راصد سيو على فيسبوك"
+              className="inline-flex items-center gap-1.5 sm:gap-2 bg-[#1877F2] hover:bg-[#166FE5] text-white px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap shrink-0 transition-colors shadow-2xs no-underline"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="shrink-0">
+                <path d="M22.675 0h-21.35c-.732 0-1.325.593-1.325 1.325v21.351c0 .731.593 1.324 1.325 1.324h11.495v-9.294h-3.128v-3.622h3.128v-2.671c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12v9.293h6.116c.73 0 1.323-.593 1.323-1.325v-21.35c0-.732-.593-1.325-1.325-1.325z" />
+              </svg>
+              <span>تابعنا على فيسبوك</span>
+            </a>
           </div>
 
           {/* Quick Info / Status Indicator on Desktop */}
