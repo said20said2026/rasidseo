@@ -735,7 +735,7 @@ export default function App() {
               {/* Domain Trust Marker */}
               <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-400 mb-4">
                 <span className="w-2 h-2 rounded-full bg-indigo-600 dark:bg-indigo-400 inline-block" />
-                <span>{t('hero.badge', 'المنصة الرائدة لفحص وتدقيق أخطاء السيو والمواقع والمدونات 2026')}</span>
+                <span>{t('hero.badge', 'خدمة فحص سيو المواقع والتقارير الفورية وتدقيق الأخطاء 2026')}</span>
               </div>
 
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.25] text-balance">
@@ -744,7 +744,7 @@ export default function App() {
               </h1>
 
               <p className="mt-4 text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
-                {t('hero.desc', 'اكتشف أفضل خدمات rasidseo.site مع دليل شامل ومراجعات مفصلة باللغة العربية لتحليل السيو الداخلي والسرعة، وتطبيق نصائح تحسين محركات البحث وتجربة المستخدم وتوليد الأكواد الفوري.')}
+                {t('hero.desc', 'اكتشف أفضل خدمات rasidseo.site عبر خدمة فحص سيو المواقع والتقارير الفورية مع دليل شامل ومراجعات مفصلة باللغة العربية، وتطبيق نصائح تحسين محركات البحث وتجربة المستخدم وتوليد الأكواد.')}
               </p>
 
               {/* URL Input Form */}
@@ -968,7 +968,7 @@ export default function App() {
                     src={heroBannerFallback}
                     srcSet="/dashboard-preview-480.jpg 480w, /dashboard-preview.jpg 800w"
                     sizes="(max-width: 1024px) 100vw, 520px"
-                    alt="لوحة فحص وتحليل السيو التقني للمواقع والمدونات"
+                    alt="خدمة فحص سيو المواقع والتقارير الفورية - لوحة تحليل السيو التقني"
                     width={800}
                     height={447}
                     loading="eager"
@@ -2266,7 +2266,7 @@ export default function App() {
                 <span className="text-xs font-mono text-indigo-400">RasidSEO</span>
               </div>
               <p className="text-xs text-slate-500 mt-1 max-w-md">
-                اكتشف أفضل خدمات rasidseo.site مع دليل شامل ومراجعات مفصلة باللغة العربية لفحص المواقع، وتطبيق نصائح تحسين محركات البحث وتجربة المستخدم.
+                اكتشف أفضل خدمات rasidseo.site عبر خدمة فحص سيو المواقع والتقارير الفورية مع دليل شامل ومراجعات مفصلة باللغة العربية، وتطبيق نصائح تحسين محركات البحث وتجربة المستخدم.
               </p>
             </div>
 
