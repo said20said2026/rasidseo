@@ -73,6 +73,7 @@ import { FaqSection } from './components/FaqSection';
 import { SeoMasteryContentSection } from './components/SeoMasteryContentSection';
 import { HowSiteWorksSection } from './components/HowSiteWorksSection';
 import { InternalLinkingHubSection } from './components/InternalLinkingHubSection';
+import { BlogCornerstoneSection } from './components/BlogCornerstoneSection';
 import { DeepArticleModal } from './components/DeepArticleModal';
 import {
   DEEP_ARTICLES,
@@ -953,10 +954,20 @@ export default function App() {
             <div className="lg:col-span-5">
               <div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-xl bg-slate-900">
                 <picture>
-                  <source srcSet={heroBannerAvif} type="image/avif" />
-                  <source srcSet={heroBannerWebp} type="image/webp" />
+                  <source
+                    srcSet="/dashboard-preview-480.avif 480w, /dashboard-preview.avif 800w"
+                    sizes="(max-width: 1024px) 100vw, 520px"
+                    type="image/avif"
+                  />
+                  <source
+                    srcSet="/dashboard-preview-480.webp 480w, /dashboard-preview.webp 800w"
+                    sizes="(max-width: 1024px) 100vw, 520px"
+                    type="image/webp"
+                  />
                   <img
                     src={heroBannerFallback}
+                    srcSet="/dashboard-preview-480.jpg 480w, /dashboard-preview.jpg 800w"
+                    sizes="(max-width: 1024px) 100vw, 520px"
                     alt="لوحة فحص وتحليل السيو التقني للمواقع والمدونات"
                     width={800}
                     height={447}
@@ -2228,6 +2239,9 @@ export default function App() {
 
       {/* SEO Educational Guide & Ranking Authority Section */}
       <SeoMasteryContentSection />
+
+      {/* Cornerstone Blog Articles & 2026 CTR Updates */}
+      <BlogCornerstoneSection />
 
       {/* Internal Linking Hub & Topic Silos (شبكة الروابط الداخلية والمقالات العميقة) */}
       <InternalLinkingHubSection />

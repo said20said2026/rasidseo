@@ -40,7 +40,7 @@ export const HowSiteWorksSection: React.FC = () => {
             <span className="text-slate-300 dark:text-slate-700">|</span>
             <span className="flex items-center gap-1 font-mono text-[11px] text-slate-600 dark:text-slate-400">
               <Clock className="w-3 h-3" />
-              دليل شامل (~600 كلمة)
+              دليل محدث بأرقام 2026 (~600 كلمة)
             </span>
           </div>
 

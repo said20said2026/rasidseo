@@ -20,5 +20,32 @@
     // Clear any stale legacy googtrans cookies so no legacy widget banner lingers
     document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
     document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=' + window.location.hostname + '; path=/;';
+
+    // Activate deferred non-blocking stylesheets cleanly without inline onload handlers (CSP-safe)
+    function activateDeferredStyles() {
+      var links = document.querySelectorAll('link[data-defer-style="true"]');
+      for (var i = 0; i < links.length; i++) {
+        var link = links[i];
+        if (link.rel === 'preload') {
+          link.rel = 'stylesheet';
+        }
+      }
+    }
+
+    var preloadLinks = document.querySelectorAll('link[data-defer-style="true"]');
+    for (var j = 0; j < preloadLinks.length; j++) {
+      (function (lnk) {
+        lnk.addEventListener('load', function () {
+          lnk.rel = 'stylesheet';
+        });
+      })(preloadLinks[j]);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', activateDeferredStyles);
+    } else {
+      activateDeferredStyles();
+    }
+    window.addEventListener('load', activateDeferredStyles);
   } catch (e) {}
 })();

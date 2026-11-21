@@ -1,5 +1,17 @@
 import React from 'react';
-import { X, BookOpen, Clock, CheckCircle2, ArrowLeft, Home, ChevronLeft, Sparkles } from 'lucide-react';
+import {
+  X,
+  BookOpen,
+  Clock,
+  CheckCircle2,
+  ArrowLeft,
+  Home,
+  ChevronLeft,
+  Sparkles,
+  CalendarClock,
+  TrendingUp,
+  Search
+} from 'lucide-react';
 import { DeepArticleData, DEEP_ARTICLES, DEEP_PAGE_ACTION_PATHS, dispatchDeepNavigation } from '../data/deepPages';
 
 interface DeepArticleModalProps {
@@ -67,15 +79,22 @@ export const DeepArticleModal: React.FC<DeepArticleModalProps> = ({
         </div>
 
         {/* Article Body */}
-        <div className="overflow-y-auto p-6 sm:p-8 space-y-6">
+        <article className="overflow-y-auto p-6 sm:p-8 space-y-6">
           <header className="space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-xs font-bold">
-              <BookOpen className="w-3.5 h-3.5" />
-              <span>{article.categoryLabelAr}</span>
-              <span className="text-slate-300 dark:text-slate-700">|</span>
-              <span className="flex items-center gap-1 font-mono text-[11px]">
-                <Clock className="w-3 h-3" />
-                {article.readTimeAr}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-xs font-bold">
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>{article.categoryLabelAr}</span>
+                <span className="text-slate-300 dark:text-slate-700">|</span>
+                <span className="flex items-center gap-1 font-mono text-[11px]">
+                  <Clock className="w-3 h-3" />
+                  {article.readTimeAr}
+                </span>
+              </div>
+
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-bold">
+                <CalendarClock className="w-3.5 h-3.5" />
+                <span>{article.updatedLabelAr}</span>
               </span>
             </div>
 
@@ -85,11 +104,46 @@ export const DeepArticleModal: React.FC<DeepArticleModalProps> = ({
             <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
               {article.summaryAr}
             </p>
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 text-xs">
+              <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
+                <Search className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                <span>{article.searchQueryIntentAr}</span>
+              </div>
+              <div className="flex items-center gap-1 text-amber-700 dark:text-amber-400 font-semibold shrink-0">
+                <TrendingUp className="w-3.5 h-3.5" />
+                <span>{article.ctrBoostStatAr}</span>
+              </div>
+            </div>
           </header>
 
-          <div className="space-y-4 text-sm sm:text-[15px] text-slate-700 dark:text-slate-300 leading-loose">
-            {article.paragraphsAr.map((para, idx) => (
-              <p key={idx}>{para}</p>
+          {/* Structured H2 & H3 Sections */}
+          <div className="space-y-6 text-sm sm:text-[15px] text-slate-700 dark:text-slate-300 leading-loose">
+            {article.sectionsAr.map((sec, idx) => (
+              <section key={idx} className="space-y-3">
+                <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white border-r-4 border-indigo-600 pr-3">
+                  {sec.headingH2}
+                </h2>
+                <p>{sec.body}</p>
+
+                {sec.subSections && sec.subSections.length > 0 && (
+                  <div className="space-y-3 pt-1">
+                    {sec.subSections.map((sub, sIdx) => (
+                      <div
+                        key={sIdx}
+                        className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/70 dark:border-slate-800 space-y-1.5"
+                      >
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                          {sub.headingH3}
+                        </h3>
+                        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                          {sub.body}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
             ))}
           </div>
 
@@ -97,7 +151,7 @@ export const DeepArticleModal: React.FC<DeepArticleModalProps> = ({
           <div className="p-5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/60 space-y-3">
             <h3 className="text-sm font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span>خلاصة التطبيق العملي:</span>
+              <span>خلاصة التطبيق العملي (تحديث 2026):</span>
             </h3>
             <ul className="space-y-2">
               {article.keyTakeawaysAr.map((point, idx) => (
@@ -131,7 +185,7 @@ export const DeepArticleModal: React.FC<DeepArticleModalProps> = ({
               ))}
             </div>
           </div>
-        </div>
+        </article>
 
         {/* Footer CTA */}
         <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/80 flex items-center justify-between gap-3">

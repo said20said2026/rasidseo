@@ -2496,8 +2496,22 @@ ${JSON.stringify(itemsBrief, null, 2)}
   }
 });
 
-// Setup Vite or Static File Serving
+// Setup Vite or Static File Serving with Strong Edge/CDN Cache-Control
 async function startServer() {
+  // Strong immutable cache headers for static media, fonts, and hashed production bundles
+  app.use((req, res, next) => {
+    const cleanPath = req.path.toLowerCase();
+    const isImmutableMedia = /\.(avif|webp|jpg|jpeg|png|svg|woff2)$/i.test(cleanPath);
+    const isHashedAsset = cleanPath.startsWith('/assets/') && /\.(css|js|mjs|woff2)$/i.test(cleanPath);
+
+    if (isImmutableMedia || isHashedAsset) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      res.setHeader('CDN-Cache-Control', 'public, max-age=31536000, immutable');
+      res.setHeader('Cloudflare-CDN-Cache-Control', 'max-age=31536000');
+    }
+    next();
+  });
+
   if (process.env.NODE_ENV !== 'production') {
     const vitePkg = 'vite';
     const { createServer } = await import(/* @vite-ignore */ vitePkg);
@@ -2507,8 +2521,22 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    app.use(express.static(path.resolve(__dirnameResolved, 'dist')));
+    app.use(
+      express.static(path.resolve(__dirnameResolved, 'dist'), {
+        maxAge: '1y',
+        immutable: true,
+        setHeaders: (res, filePath) => {
+          if (filePath.endsWith('.html')) {
+            res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+          } else {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+            res.setHeader('CDN-Cache-Control', 'public, max-age=31536000, immutable');
+          }
+        },
+      })
+    );
     app.get('*', (_req: Request, res: Response) => {
+      res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
       res.sendFile(path.resolve(__dirnameResolved, 'dist', 'index.html'));
     });
   }

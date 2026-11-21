@@ -43,7 +43,29 @@ export function getAiTipForAuditItem(
 ): AiCriterionTip {
   const domain = getCleanDomain(pageUrl);
   const cleanUrl = pageUrl || 'https://example.com/';
-  const displayTitle = pageTitle && pageTitle !== 'عنوان غير معروف' ? pageTitle : `صفحة ${domain}`;
+  const buildOptimalTitle = (rawTitle?: string): string => {
+    const clean = (rawTitle || '').trim();
+    if (!clean || clean === 'عنوان غير معروف') {
+      return `دليل السيو الشامل وفحص المواقع | ${domain} 2026`.slice(0, 60);
+    }
+    if (clean.length <= 60 && clean.length >= 45) {
+      return clean;
+    }
+    if (clean.length < 45) {
+      const candidate = `${clean} | ${domain} 2026`;
+      return candidate.length <= 60 ? candidate : `${clean} | ${domain}`.slice(0, 60);
+    }
+    // Trim cleanly at separator or word boundary to keep within 45..58 characters
+    const words = clean.split(/\s+/);
+    let shortened = '';
+    for (const w of words) {
+      const next = shortened ? `${shortened} ${w}` : w;
+      if (next.length > 56) break;
+      shortened = next;
+    }
+    return shortened || clean.slice(0, 58).trim();
+  };
+  const displayTitle = buildOptimalTitle(pageTitle);
   const id = item.id.toLowerCase();
   const isError = item.status === 'error';
   const isWarning = item.status === 'warning';
@@ -54,13 +76,13 @@ export function getAiTipForAuditItem(
       badge: 'ترويسة HTML (<head>)',
       headlineAr: isError ? 'إصلاح وسم العنوان <title> في كود الموقع' : 'تحسين بنية وسم العنوان <title>',
       codeContextAr: item.currentValue
-        ? `العنوان الحالي في كود الموقع: "${item.currentValue}" (عدد الأحرف: ${item.currentValue.length}).`
+        ? `العنوان الحالي في كود الموقع: "${item.currentValue}".`
         : 'لم يتم العثور على وسم <title> داخل وسم <head> في الكود المصدري.',
       stepByStepActionAr:
         '1. افتح الملف المصدري الرئيسي لقالب الموقع (مثل index.html أو header.php أو layout.tsx).\n' +
         '2. حدد وسم <title> واستبدله بالصيغة المقترحة التي تضع الكلمة المفتاحية في البداية ثم اسم البراند.\n' +
-        '3. احرص على ألا يتجاوز طول العنوان 60 حرفاً لضمان ظهوره كاملاً دون اقتطاع في نتائج بحث جوجل.',
-      codeSnippet: `<title>${displayTitle} | الكلمة المفتاحية المستهدفة لعام 2026</title>`,
+        '3. احرص على أن يكون طول العنوان بين 45 و60 حرفاً لضمان ظهوره كاملاً دون اقتطاع في نتائج بحث جوجل.',
+      codeSnippet: `<title>${displayTitle}</title>`,
       codeLanguage: 'html',
       whereToPutAr: 'داخل قسم <head> في قمة كود HTML وقبل وسوم الميتا',
       expectedImpactAr: 'ظهور العنوان بالكامل في جوجل ورفع نسبة النقر للظهور (CTR) بنسبة تصل إلى +28%.',
@@ -70,20 +92,20 @@ export function getAiTipForAuditItem(
         {
           title: 'HTML 5 (<head>)',
           language: 'html',
-          description: 'هيكل وسم العنوان القياسي يدمج الكلمة الأساسية مع اسم العلامة التجارية',
-          code: `<title>${displayTitle} | الكلمة المفتاحية الأساسية لعام 2026</title>`
+          description: 'هيكل وسم العنوان القياسي بين 45 و60 حرفاً يدمج الكلمة الأساسية مع العلامة التجارية',
+          code: `<title>${displayTitle}</title>`
         },
         {
           title: 'Next.js App Router (metadata)',
           language: 'typescript',
           description: 'تصدير كائن metadata في Next.js 13/14/15 داخل layout.tsx أو page.tsx',
-          code: `import type { Metadata } from 'next';\n\nexport const metadata: Metadata = {\n  title: {\n    default: '${displayTitle} | المنصة الرائدة 2026',\n    template: '%s | ${domain}'\n  }\n};`
+          code: `import type { Metadata } from 'next';\n\nexport const metadata: Metadata = {\n  title: {\n    default: '${displayTitle}',\n    template: '%s | ${domain}'\n  }\n};`
         },
         {
           title: 'React Helmet / Next.js Pages',
           language: 'tsx',
           description: 'حقن ديناميكي لوسم العنوان في تطبيقات React SPA',
-          code: `<Helmet>\n  <title>${displayTitle} | الكلمة المفتاحية المستهدفة</title>\n</Helmet>`
+          code: `<Helmet>\n  <title>${displayTitle}</title>\n</Helmet>`
         }
       ]
     };
@@ -865,11 +887,29 @@ export function getSmartTipForAuditItem(
 
     // 10. Title Tag
     if (id.includes('title')) {
+      const cleanTitle = (pageTitle || '').trim();
+      let optimalTitle = cleanTitle && cleanTitle !== 'عنوان غير معروف'
+        ? cleanTitle
+        : `دليل السيو الشامل وفحص المواقع | ${domain} 2026`;
+      if (optimalTitle.length > 60) {
+        const words = optimalTitle.split(/\s+/);
+        let trimmed = '';
+        for (const w of words) {
+          const next = trimmed ? `${trimmed} ${w}` : w;
+          if (next.length > 56) break;
+          trimmed = next;
+        }
+        optimalTitle = trimmed || optimalTitle.slice(0, 58).trim();
+      } else if (optimalTitle.length < 45 && !optimalTitle.includes(domain)) {
+        const candidate = `${optimalTitle} | ${domain}`;
+        if (candidate.length <= 60) optimalTitle = candidate;
+      }
+
       return {
         badge: 'العنوان الأساسي في نتائج البحث',
         technicalContext: `طول عنوان الصفحة أو هيكله الحالي (${item.currentValue || 'غير مثالي'}) يهدد باقتطاعه أو إضعاف وزنه في خوارزميات الترتيب.`,
         actionableTip: 'اجعل العنوان بين 45 إلى 60 حرفاً، وضع الكلمة المفتاحية في أول 3 كلمات متبوعة بفاصل وعلامتك التجارية.',
-        codeSuggestion: `<title>${pageTitle || domain} | دليلك المتكامل للسيو لعام 2026</title>`,
+        codeSuggestion: `<title>${optimalTitle}</title>`,
         urgency
       };
     }

@@ -70,7 +70,7 @@ export const SeoMasteryContentSection: React.FC = () => {
       }
     },
     "datePublished": "2026-01-01",
-    "dateModified": "2026-10-30",
+    "dateModified": "2026-11-21",
     "articleSection": "SEO Guide & Technical Optimization"
   };
 
@@ -99,7 +99,7 @@ export const SeoMasteryContentSection: React.FC = () => {
             <span className="text-slate-300 dark:text-slate-700">|</span>
             <span className="flex items-center gap-1 font-mono text-[11px] text-slate-600 dark:text-slate-400">
               <Clock className="w-3 h-3" />
-              قراءة متعمقة (6 دقائق)
+              محدّث نوفمبر 2026 لرفع CTR (6 دقائق)
             </span>
           </div>
 
