@@ -2496,6 +2496,12 @@ ${JSON.stringify(itemsBrief, null, 2)}
   }
 });
 
+app.get('/googleba8a8f81976877d7.html', (_req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache');
+  return res.status(200).send('google-site-verification: googleba8a8f81976877d7.html');
+});
+
 // Setup Vite or Static File Serving with Strong Edge/CDN Cache-Control
 async function startServer() {
   // Strong immutable cache headers for static media, fonts, and hashed production bundles
