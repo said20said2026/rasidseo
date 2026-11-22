@@ -735,16 +735,16 @@ export default function App() {
               {/* Domain Trust Marker */}
               <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-400 mb-4">
                 <span className="w-2 h-2 rounded-full bg-indigo-600 dark:bg-indigo-400 inline-block" />
-                <span>{t('hero.badge', 'خدمة فحص سيو المواقع والتقارير الفورية وتدقيق الأخطاء 2026')}</span>
+                <span>{t('hero.badge', 'أفضل خدمات rasidseo.site • دليل شامل ومراجعات مفصلة باللغة العربية 2026')}</span>
               </div>
 
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.25] text-balance">
-                {t('hero.title_start', 'افحص موقعك ومدونتك واكتشف الأخطاء التي تعيق تصدرك في')}{' '}
-                <span className="text-indigo-600 dark:text-indigo-400">{t('hero.title_target', 'جوجل')}</span>
+                {t('hero.title_start', 'فحص سيو المواقع والتقارير الفورية |')}{' '}
+                <span className="text-indigo-600 dark:text-indigo-400">{t('hero.title_target', 'راصد سيو RasidSEO')}</span>
               </h1>
 
               <p className="mt-4 text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
-                {t('hero.desc', 'اكتشف أفضل خدمات rasidseo.site عبر خدمة فحص سيو المواقع والتقارير الفورية مع دليل شامل ومراجعات مفصلة باللغة العربية، وتطبيق نصائح تحسين محركات البحث وتجربة المستخدم وتوليد الأكواد.')}
+                {t('hero.desc', 'افحص موقعك مجاناً عبر RasidSEO واحصل على تقارير سيو فورية، كشف الأخطاء التقنية، تحليل السرعة والكلمات المفتاحية، وحلول برمجية جاهزة لتصدر نتائج جوجل.')}
               </p>
 
               {/* URL Input Form */}
