@@ -67,13 +67,14 @@ app.use((req, res, next) => {
 // Security Headers Middleware (CSP against XSS, MIME sniffing, Clickjacking)
 app.use((_req, res, next) => {
   const isProd = process.env.NODE_ENV === 'production';
+  const adSenseHosts = 'https://pagead2.googlesyndication.com https://*.googlesyndication.com https://googleads.g.doubleclick.net https://*.doubleclick.net https://*.adtrafficquality.google https://www.google.com';
   const scriptSrc = isProd
-    ? "'self' https://translate.google.com https://translate.googleapis.com https://www.gstatic.com"
-    : "'self' 'unsafe-inline' 'unsafe-eval' https://translate.google.com https://translate.googleapis.com https://www.gstatic.com";
+    ? `'self' https://translate.google.com https://translate.googleapis.com https://www.gstatic.com ${adSenseHosts}`
+    : `'self' 'unsafe-inline' 'unsafe-eval' https://translate.google.com https://translate.googleapis.com https://www.gstatic.com ${adSenseHosts}`;
 
   res.setHeader(
     'Content-Security-Policy',
-    `default-src 'self'; script-src ${scriptSrc}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://www.gstatic.com https://translate.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' ws: wss: https://www.rasidseo.site https://rasidseo.site https://translate.googleapis.com https://translate-pa.googleapis.com https://*.run.app; frame-src 'self' https://translate.google.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self' https://aistudio.google.com https://*.google.com https://*.googleusercontent.com;`
+    `default-src 'self'; script-src ${scriptSrc}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://www.gstatic.com https://translate.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' ws: wss: https://www.rasidseo.site https://rasidseo.site https://translate.googleapis.com https://translate-pa.googleapis.com https://*.run.app ${adSenseHosts}; frame-src 'self' https://translate.google.com ${adSenseHosts}; object-src 'none'; base-uri 'self'; frame-ancestors 'self' https://aistudio.google.com https://*.google.com https://*.googleusercontent.com;`
   );
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
